@@ -1,6 +1,8 @@
 let audio = document.getElementById("audio_player");
 const fragmentContainer = document.getElementById("fragment_container");
-fetch("./Laitu_0003.json")
+// fetch("./Laitu_0003.json")
+// fetch("http://localhost:5000/getall")
+fetch("https://audio-silk.vercel.app/getall")
   .then((response) => response.json())
   .then((data) => {
     const fuse = new Fuse(data, {
