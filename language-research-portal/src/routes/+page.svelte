@@ -245,4 +245,5 @@
   :global(html) {
     scroll-behavior: smooth;
   }
+  
 </style>
