@@ -1,0 +1,249 @@
+<script>
+  import { onMount } from 'svelte';
+  import AOS from 'aos';
+  import 'aos/dist/aos.css';
+  
+  onMount(() => {
+    // Initialize AOS
+    AOS.init({
+      duration: 800,
+      once: true
+    });
+  });
+
+  // Language data for the grid
+  const languages = [
+    { name: 'Ter Sami', speakers: '2 speakers' },
+    { name: 'Patwin', speakers: '4 speakers' },
+    { name: 'Kawishana', speakers: '3 speakers' },
+    { name: 'Liki', speakers: '5 speakers' },
+    { name: 'Pazeh', speakers: '1 speaker' },
+    { name: 'Tehuelche', speakers: '4 speakers' },
+    { name: 'Sarcee', speakers: '3 speakers' },
+    { name: 'Wichita', speakers: '1 speaker' },
+    { name: 'Yagan', speakers: '1 speaker' },
+    { name: 'Manx', speakers: 'Revival efforts' },
+    { name: 'Cornish', speakers: 'Revival efforts' },
+    { name: 'Kusunda', speakers: '7 speakers' },
+    { name: 'Tanacross', speakers: '2 speakers' },
+    { name: 'Pipil', speakers: '20 speakers' },
+    { name: 'Chamicuro', speakers: '2 speakers' },
+    { name: 'Ongota', speakers: '12 speakers' },
+    { name: 'Sowa', speakers: '4 speakers' },
+    { name: 'Lemerig', speakers: '2 speakers' },
+    { name: 'Kaixana', speakers: '1 speaker' },
+    { name: 'Taushiro', speakers: '1 speaker' }
+  ];
+</script>
+
+<svelte:head>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <!-- AOS Animation Library -->
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  
+  <style>
+    html {
+      scroll-behavior: smooth;
+    }
+  </style>
+</svelte:head>
+
+<!-- Navbar -->
+<nav class="navbar fixed top-0 left-0 right-0 z-50 bg-base-100 shadow-lg px-4 md:px-8">
+  <div class="navbar-start">
+    <div class="dropdown">
+      <div tabindex="0" role="button" class="btn btn-ghost lg:hidden">
+        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16"/></svg>
+      </div>
+      <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
+        <li><a href="#home">Home</a></li>
+        <li><a href="#corpuses">Corpuses</a></li>
+        <li><a href="#endangered">Endangered Languages</a></li>
+        <li><a href="#about">About</a></li>
+      </ul>
+    </div>
+    <a href="/" class="font-display text-xl text-primary" data-aos="fade-right">Corpuses</a>
+  </div>
+  <div class="navbar-center hidden lg:flex">
+    <ul class="menu menu-horizontal px-1">
+      <li><a href="#home" data-aos="fade-down" data-aos-delay="100">Home</a></li>
+      <li><a href="#corpuses" data-aos="fade-down" data-aos-delay="200">Corpuses</a></li>
+      <li><a href="#endangered" data-aos="fade-down" data-aos-delay="300">Endangered Languages</a></li>
+      <li><a href="#about" data-aos="fade-down" data-aos-delay="400">About</a></li>
+    </ul>
+  </div>
+  <div class="navbar-end">
+    <a class="btn" style="background-color: #1464CC; color: white;" data-aos="fade-left">Contribute Data</a>
+  </div>
+</nav>
+
+<!-- Hero Section -->
+<div id="home" class="hero min-h-[80vh] bg-neutral">
+  <div class="hero-content text-center">
+    <div class="max-w-3xl">
+      <h1 class="text-5xl font-bold font-display text-primary mb-8" data-aos="fade-up">Preserving Endangered Languages Through Research</h1>
+      <p class="py-6 text-lg" data-aos="fade-up" data-aos-delay="200">Help us document and preserve endangered languages before they disappear. Our platform collects linguistic data, cultural context, and native speaker recordings of critically endangered languages.</p>
+      <button class="btn" style="background-color: #1464CC; color: white;" data-aos="fade-up" data-aos-delay="400">Start Contributing</button>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Corpuses Section -->
+<section id="corpuses" class="bg-base-100 py-16">
+  <div class="container mx-auto px-4">
+    <h2 class="text-4xl font-display text-primary text-center mb-12" data-aos="fade-up">Critical Priority Languages</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <!-- Corpus Card 1 -->
+      <div class="card bg-neutral shadow-xl" data-aos="fade-up" data-aos-delay="100">
+        <div class="card-body">
+          <h3 class="card-title font-display">Ainu Language</h3>
+          <p>Traditional language of Japan's indigenous Ainu people. Only 10 native speakers remain.</p>
+          <div class="card-actions justify-end">
+            <button class="btn" style="background-color: #1464CC; color: white;">Document</button>
+          </div>
+        </div>
+      </div>
+      <!-- Corpus Card 2 -->
+      <div class="card bg-neutral shadow-xl" data-aos="fade-up" data-aos-delay="200">
+        <div class="card-body">
+          <h3 class="card-title font-display">Eyak Language</h3>
+          <p>Native Alaskan language with no remaining native speakers. Last speaker died in 2008.</p>
+          <div class="card-actions justify-end">
+            <button class="btn" style="background-color: #1464CC; color: white;">Document</button>
+          </div>
+        </div>
+      </div>
+      <!-- Corpus Card 3 -->
+      <div class="card bg-neutral shadow-xl" data-aos="fade-up" data-aos-delay="300">
+        <div class="card-body">
+          <h3 class="card-title font-display">Tanema Language</h3>
+          <p>Solomon Islands language with only one remaining speaker as of 2012.</p>
+          <div class="card-actions justify-end">
+            <button class="btn" style="background-color: #1464CC; color: white;">Document</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Popular Section -->
+<section id="endangered" class="bg-primary text-base-100 py-16">
+  <div class="container mx-auto px-4">
+    <h2 class="text-4xl font-display text-center mb-12" data-aos="fade-up">Most Endangered</h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+      <!-- Language 1 -->
+      <div class="text-center" data-aos="zoom-in" data-aos-delay="100">
+        <div class="rounded-full bg-base-100 w-24 h-24 mx-auto mb-4 flex items-center justify-center">
+          <span class="text-primary text-4xl font-bold">Ay</span>
+        </div>
+        <h3 class="font-display text-xl">Ayapaneco</h3>
+        <p>2 speakers</p>
+      </div>
+      <!-- Language 2 -->
+      <div class="text-center" data-aos="zoom-in" data-aos-delay="200">
+        <div class="rounded-full bg-base-100 w-24 h-24 mx-auto mb-4 flex items-center justify-center">
+          <span class="text-primary text-4xl font-bold">Dl</span>
+        </div>
+        <h3 class="font-display text-xl">Dumi</h3>
+        <p>8 speakers</p>
+      </div>
+      <!-- Language 3 -->
+      <div class="text-center" data-aos="zoom-in" data-aos-delay="300">
+        <div class="rounded-full bg-base-100 w-24 h-24 mx-auto mb-4 flex items-center justify-center">
+          <span class="text-primary text-4xl font-bold">Nj</span>
+        </div>
+        <h3 class="font-display text-xl">N|uu</h3>
+        <p>4 speakers</p>
+      </div>
+      <!-- Language 4 -->
+      <div class="text-center" data-aos="zoom-in" data-aos-delay="400">
+        <div class="rounded-full bg-base-100 w-24 h-24 mx-auto mb-4 flex items-center justify-center">
+          <span class="text-primary text-4xl font-bold">Lv</span>
+        </div>
+        <h3 class="font-display text-xl">Livonian</h3>
+        <p>1 speaker</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Languages Grid Section -->
+<section class="py-16 bg-base-100">
+  <div class="container mx-auto px-4">
+    <h2 class="text-4xl font-display text-center mb-12" data-aos="fade-up">Endangered Languages by Region</h2>
+    
+    <!-- Languages Grid -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+      {#each languages as language, i}
+        <div class="card bg-base-200 hover:shadow-lg transition-shadow" data-aos="fade-up" data-aos-delay={100 + (i * 50)}>
+          <div class="card-body p-4 text-center">
+            <h3 class="font-display text-lg">{language.name}</h3>
+            <p class="text-sm opacity-75">{language.speakers}</p>
+          </div>
+        </div>
+      {/each}
+    </div>
+
+    <!-- View All Button -->
+    <div class="text-center mt-8">
+      <button class="btn btn-primary" data-aos="fade-up">View All Endangered Languages</button>
+    </div>
+  </div>
+</section>
+
+<!-- Statistics Section -->
+<section class="bg-neutral py-16">
+  <div class="container mx-auto px-4 overflow-hidden">
+    <div class="stats stats-vertical lg:stats-horizontal shadow w-full overflow-hidden">
+      <div class="stat" data-aos="fade-right">
+        <div class="stat-title">Documented Languages</div>
+        <div class="stat-value text-primary">573</div>
+        <div class="stat-desc">Critically endangered</div>
+      </div>
+      <div class="stat" data-aos="fade-up">
+        <div class="stat-title">Active Contributors</div>
+        <div class="stat-value text-secondary">1,200</div>
+        <div class="stat-desc">↗︎ 300 (33%)</div>
+      </div>
+      <div class="stat" data-aos="fade-left">
+        <div class="stat-title">Recorded Hours</div>
+        <div class="stat-value text-accent">10K+</div>
+        <div class="stat-desc">Of native speakers</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer id="about" class="footer p-10 bg-primary text-base-100">
+  <nav>
+    <h6 class="footer-title">Services</h6> 
+    <a class="link link-hover">Language Documentation</a>
+    <a class="link link-hover">Cultural Preservation</a>
+    <a class="link link-hover">Research Tools</a>
+    <a class="link link-hover">Documentation</a>
+  </nav> 
+  <nav>
+    <h6 class="footer-title">Organization</h6> 
+    <a class="link link-hover">About us</a>
+    <a class="link link-hover">Contact</a>
+    <a class="link link-hover">Research</a>
+    <a class="link link-hover">Press kit</a>
+  </nav> 
+  <nav>
+    <h6 class="footer-title">Legal</h6> 
+    <a class="link link-hover">Terms of use</a>
+    <a class="link link-hover">Privacy policy</a>
+    <a class="link link-hover">Cookie policy</a>
+  </nav>
+</footer>
+
+<style>
+  :global(html) {
+    scroll-behavior: smooth;
+  }
+  
+</style>
