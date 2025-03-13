@@ -13,7 +13,7 @@
   let cardsContainer: HTMLDivElement;
   let activeCard: HTMLDivElement;
   let isUserScrolling = false;
-  let scrollTimeout: NodeJS.Timeout;
+  let scrollTimeout: number;
   let autoScrollEnabled = true;
 
   onMount(() => {
