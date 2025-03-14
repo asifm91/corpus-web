@@ -3,6 +3,7 @@
   import { fade } from "svelte/transition";
   import laituData from "./Laitu_0003.json";
   import audiofile from "./laitu003.wav";
+  import Fuse from "fuse.js";
 
   let audioPlayer: HTMLAudioElement;
   let currentTime = 0;
@@ -15,6 +16,25 @@
   let isUserScrolling = false;
   let scrollTimeout: number;
   let autoScrollEnabled = true;
+  let searchQuery = "";
+  let filteredData = laituData;
+
+  // Configure Fuse.js
+  const fuseOptions = {
+    keys: ["laituText", "engText"],
+    threshold: 0.4,
+    ignoreLocation: true,
+  };
+  const fuse = new Fuse(laituData, fuseOptions);
+
+  // Add search function
+  $: {
+    if (searchQuery) {
+      filteredData = fuse.search(searchQuery).map((result) => result.item);
+    } else {
+      filteredData = laituData;
+    }
+  }
 
   onMount(() => {
     if (audioPlayer) {
@@ -55,7 +75,7 @@
 
   function updateActiveCard() {
     const previousIndex = activeCardIndex;
-    activeCardIndex = laituData.findIndex(
+    activeCardIndex = filteredData.findIndex(
       (item) => currentTime >= item.startTime && currentTime <= item.endTime
     );
 
@@ -130,6 +150,8 @@
         laituData[nextIndex].endTime,
         nextIndex
       );
+      // Clear search when navigating
+      searchQuery = "";
       if (autoScrollEnabled) {
         scrollToActiveCard();
       }
@@ -144,6 +166,8 @@
         laituData[prevIndex].endTime,
         prevIndex
       );
+      // Clear search when navigating
+      searchQuery = "";
       if (autoScrollEnabled) {
         scrollToActiveCard();
       }
@@ -298,19 +322,36 @@
     </div>
   </div>
 
+  <!-- Add search input before the cards container -->
+  <div class="mb-4">
+    <input
+      type="text"
+      placeholder="Search in Laitu or English text..."
+      class="input input-bordered w-full"
+      bind:value={searchQuery}
+    />
+  </div>
+
   <!-- Transcript Cards -->
   <div
-    class="grid gap-4 h-[65vh] p-3 overflow-auto scroll-smooth"
+    class="flex flex-col gap-4 p-3 overflow-auto min-h-0"
     bind:this={cardsContainer}
     on:scroll={handleScroll}
     data-aos="fade-up"
+    style="max-height: calc(100vh - 300px);"
   >
-    {#each laituData as segment, index}
+    {#each filteredData as segment, index}
       <div
-        data-index={index}
+        data-index={laituData.findIndex(
+          (item) => item.startTime === segment.startTime
+        )}
         class="card bg-base-100 shadow-lg transition-all duration-300 hover:shadow-xl"
-        class:ring-2={index === activeCardIndex}
-        class:ring-primary={index === activeCardIndex}
+        class:ring-2={laituData.findIndex(
+          (item) => item.startTime === segment.startTime
+        ) === activeCardIndex}
+        class:ring-primary={laituData.findIndex(
+          (item) => item.startTime === segment.startTime
+        ) === activeCardIndex}
         bind:this={activeCard}
         transition:fade
       >
@@ -319,9 +360,15 @@
             <button
               class="btn btn-circle btn-sm btn-primary"
               on:click={() =>
-                playSegment(segment.startTime, segment.endTime, index)}
+                playSegment(
+                  segment.startTime,
+                  segment.endTime,
+                  laituData.findIndex(
+                    (item) => item.startTime === segment.startTime
+                  )
+                )}
             >
-              {#if isPlaying && index === activeCardIndex}
+              {#if isPlaying && laituData.findIndex((item) => item.startTime === segment.startTime) === activeCardIndex}
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   class="h-4 w-4"
