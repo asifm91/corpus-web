@@ -63,25 +63,8 @@
 
     try {
       // Try MP3 first
-      let audioModule;
       try {
-        const mp3Response = await fetch(`/${audioFileName}.mp3`);
-        if (mp3Response.ok) {
-          const blob = await mp3Response.blob();
-          audioSrc = URL.createObjectURL(blob);
-          if (audioPlayer) {
-            audioPlayer.src = audioSrc;
-            await audioPlayer.load();
-            isLoading = false;
-            return;
-          }
-        } else {
-          throw new Error("MP3 not found");
-        }
-      } catch {
-        // MP3 not found, try WAV
-        try {
-          audioModule = await import(`./${audioFileName}.wav`);
+        const audioModule = await import(`./${audioFileName}.mp3`);
           if (audioModule.default) {
             audioSrc = audioModule.default;
             if (audioPlayer) {
@@ -90,18 +73,29 @@
               isLoading = false;
               return;
             }
-          } else {
-            throw new Error("WAV module has no default export");
           }
+        throw new Error("MP3 not found");
+      } catch (mp3Error) {
+        // MP3 not found, try WAV
+        try {
+          const audioModule = await import(`./${audioFileName}.wav`);
+          if (audioModule.default) {
+            audioSrc = audioModule.default;
+            if (audioPlayer) {
+              audioPlayer.src = audioSrc || "";
+              await audioPlayer.load();
+              isLoading = false;
+              return;
+            }
+          }
+          throw new Error("WAV module has no default export");
         } catch (wavError) {
-          console.error("Failed to load WAV file:", wavError);
-          throw new Error(
-            "We're sorry, but the audio file you're trying to access is not available. Please try again later."
-          );
+          // If both MP3 and WAV fail, throw a combined error
+          throw new Error("No audio file found in either MP3 or WAV format");
         }
       }
     } catch (error) {
-      console.log("Failed to load audio:", error);
+      console.error("Failed to load audio:", error);
       isLoading = false;
       audioError = true;
     }
