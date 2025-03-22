@@ -118,9 +118,10 @@
         Preserving Endangered Languages Through Research
       </h1>
       <p class="py-6 text-lg" data-aos="fade-up" data-aos-delay="200">
-        Our platform hosts and archives linguistic data, recordings of
-        indigenous languages of South and Southeast Asia and searchable
-        annotated corpora.
+        Help us document and preserve endangered languages before they
+        disappear. Our platform hosts and archives linguistic data, cultural
+        context, and native speaker recordings of indigenous languages of South
+        and Southeast Asia and searchable annotated corpora.
       </p>
       <button
         class="btn"
@@ -139,62 +140,27 @@
       class="text-4xl font-display text-primary text-center mb-12"
       data-aos="fade-up"
     >
-      Critical Priority Languages
+      Recent Corpora
     </h2>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
       <!-- Corpus Card 1 -->
+       <div></div>
       <div
         class="card bg-neutral shadow-xl"
         data-aos="fade-up"
         data-aos-delay="100"
       >
         <div class="card-body">
-          <h3 class="card-title font-display">Ainu Language</h3>
-          <p>
-            Traditional language of Japan's indigenous Ainu people. Only 10
-            native speakers remain.
-          </p>
+          <h3 class="card-title font-display">Laitu Language</h3>
+          <p>1 Speaker</p>
           <div class="card-actions justify-end">
-            <button class="btn" style="background-color: #1464CC; color: white;"
-              >Document</button
+            <a
+              href="/corpora/laitu/"
+              class="btn"
+              style="background-color: #1464CC; color: white;"
             >
-          </div>
-        </div>
-      </div>
-      <!-- Corpus Card 2 -->
-      <div
-        class="card bg-neutral shadow-xl"
-        data-aos="fade-up"
-        data-aos-delay="200"
-      >
-        <div class="card-body">
-          <h3 class="card-title font-display">Eyak Language</h3>
-          <p>
-            Native Alaskan language with no remaining native speakers. Last
-            speaker died in 2008.
-          </p>
-          <div class="card-actions justify-end">
-            <button class="btn" style="background-color: #1464CC; color: white;"
-              >Document</button
-            >
-          </div>
-        </div>
-      </div>
-      <!-- Corpus Card 3 -->
-      <div
-        class="card bg-neutral shadow-xl"
-        data-aos="fade-up"
-        data-aos-delay="300"
-      >
-        <div class="card-body">
-          <h3 class="card-title font-display">Tanema Language</h3>
-          <p>
-            Solomon Islands language with only one remaining speaker as of 2012.
-          </p>
-          <div class="card-actions justify-end">
-            <button class="btn" style="background-color: #1464CC; color: white;"
-              >Document</button
-            >
+              View
+            </a>
           </div>
         </div>
       </div>
@@ -247,7 +213,7 @@
 <section class="py-16 bg-base-100">
   <div class="container mx-auto px-4">
     <h2 class="text-4xl font-display text-center mb-12" data-aos="fade-up">
-      Endangered Languages by Region
+      Indigenous languages of South and Southeast Asia
     </h2>
 
     <!-- Languages Grid -->
