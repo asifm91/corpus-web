@@ -1,8 +1,12 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
   import { fade } from "svelte/transition";
-  import laituData from "./Laitu_0003.json";
   import Fuse from "fuse.js";
+
+  export let data;
+  const transcript = data.transcript?.default;
+  const audio_mp3 = data.audio_mp3;
+  const audio_wav = data.audio_wav;
 
   let isLoading = true;
   let audioError = false;
@@ -19,17 +23,18 @@
   let scrollTimeout: number;
   let autoScrollEnabled = true;
   let searchQuery = "";
-  let filteredData = laituData;
+  let filteredData = transcript;
   let showWarning = false;
   let warningMessage = "";
 
   // Configure Fuse.js
   const fuseOptions = {
     keys: ["laituText", "engText"],
+    shouldSort: false,
     threshold: 0.4,
     ignoreLocation: true,
   };
-  const fuse = new Fuse(laituData, fuseOptions);
+  const fuse = new Fuse(transcript, fuseOptions);
 
   // Add search function
   $: {
@@ -37,7 +42,7 @@
       filteredData = fuse.search(searchQuery).map((result) => result.item);
       // Check if currently playing card exists in filtered results
       if (isPlaying && activeCardIndex !== -1) {
-        const currentSegment = laituData[activeCardIndex];
+        const currentSegment = transcript[activeCardIndex];
         const existsInFiltered = filteredData.some(
           (item) => item.startTime === currentSegment.startTime
         );
@@ -50,12 +55,12 @@
         }
       }
     } else {
-      filteredData = laituData;
+      filteredData = transcript;
     }
   }
 
   // Add file name as a prop or variable
-  const audioFileName = "laitu003"; // This can be made into a prop if needed
+  // const audioFileName = "laitu003"; // This can be made into a prop if needed
 
   async function loadAudio() {
     isLoading = true;
@@ -64,21 +69,21 @@
     try {
       // Try MP3 first
       try {
-        const audioModule = await import(`./${audioFileName}.mp3`);
-          if (audioModule.default) {
-            audioSrc = audioModule.default;
-            if (audioPlayer) {
-              audioPlayer.src = audioSrc || "";
-              await audioPlayer.load();
-              isLoading = false;
-              return;
-            }
+        const audioModule = audio_mp3;
+        if (audioModule.default) {
+          audioSrc = audioModule.default;
+          if (audioPlayer) {
+            audioPlayer.src = audioSrc || "";
+            await audioPlayer.load();
+            isLoading = false;
+            return;
           }
+        }
         throw new Error("MP3 not found");
       } catch (mp3Error) {
         // MP3 not found, try WAV
         try {
-          const audioModule = await import(`./${audioFileName}.wav`);
+          const audioModule = audio_wav;
           if (audioModule.default) {
             audioSrc = audioModule.default;
             if (audioPlayer) {
@@ -154,12 +159,12 @@
   function updateActiveCard() {
     const previousIndex = activeCardIndex;
     // First find the current segment in the full dataset
-    const currentSegment = laituData.find(
+    const currentSegment = transcript.find(
       (item) => currentTime >= item.startTime && currentTime <= item.endTime
     );
 
     if (currentSegment) {
-      activeCardIndex = laituData.findIndex(
+      activeCardIndex = transcript.findIndex(
         (item) => item.startTime === currentSegment.startTime
       );
     } else {
@@ -195,7 +200,8 @@
         // Check if the segment exists in filtered results
         const existsInFiltered = filteredData.some(
           (item) =>
-            laituData.findIndex((l) => l.startTime === item.startTime) === index
+            transcript.findIndex((l) => l.startTime === item.startTime) ===
+            index
         );
 
         if (!existsInFiltered) {
@@ -230,13 +236,14 @@
               // Get the next filtered segment
               const currentFilteredIndex = filteredData.findIndex(
                 (item) =>
-                  laituData.findIndex((l) => l.startTime === item.startTime) ===
-                  index
+                  transcript.findIndex(
+                    (l) => l.startTime === item.startTime
+                  ) === index
               );
 
               if (currentFilteredIndex < filteredData.length - 1) {
                 const nextItem = filteredData[currentFilteredIndex + 1];
-                const nextIndex = laituData.findIndex(
+                const nextIndex = transcript.findIndex(
                   (item) => item.startTime === nextItem.startTime
                 );
 
@@ -255,10 +262,10 @@
               }
             } else {
               // Normal sequential playback for unfiltered view
-              if (index < laituData.length - 1) {
+              if (index < transcript.length - 1) {
                 playSegment(
-                  laituData[index + 1].startTime,
-                  laituData[index + 1].endTime,
+                  transcript[index + 1].startTime,
+                  transcript[index + 1].endTime,
                   index + 1
                 );
               }
@@ -304,7 +311,7 @@
       if (searchQuery) {
         const currentFilteredIndex = filteredData.findIndex(
           (item) =>
-            laituData.findIndex((l) => l.startTime === item.startTime) ===
+            transcript.findIndex((l) => l.startTime === item.startTime) ===
             activeCardIndex
         );
 
@@ -319,18 +326,18 @@
         }
 
         const nextItem = filteredData[currentFilteredIndex + 1];
-        const nextIndex = laituData.findIndex(
+        const nextIndex = transcript.findIndex(
           (item) => item.startTime === nextItem.startTime
         );
         playSegment(nextItem.startTime, nextItem.endTime, nextIndex);
       } else {
         // Normal next segment behavior
         const nextIndex =
-          activeCardIndex < laituData.length - 1 ? activeCardIndex + 1 : -1;
+          activeCardIndex < transcript.length - 1 ? activeCardIndex + 1 : -1;
         if (nextIndex !== -1) {
           playSegment(
-            laituData[nextIndex].startTime,
-            laituData[nextIndex].endTime,
+            transcript[nextIndex].startTime,
+            transcript[nextIndex].endTime,
             nextIndex
           );
         }
@@ -343,7 +350,7 @@
       if (searchQuery) {
         const currentFilteredIndex = filteredData.findIndex(
           (item) =>
-            laituData.findIndex((l) => l.startTime === item.startTime) ===
+            transcript.findIndex((l) => l.startTime === item.startTime) ===
             activeCardIndex
         );
 
@@ -358,7 +365,7 @@
         }
 
         const prevItem = filteredData[currentFilteredIndex - 1];
-        const prevIndex = laituData.findIndex(
+        const prevIndex = transcript.findIndex(
           (item) => item.startTime === prevItem.startTime
         );
         playSegment(prevItem.startTime, prevItem.endTime, prevIndex);
@@ -367,8 +374,8 @@
         const prevIndex = activeCardIndex > 0 ? activeCardIndex - 1 : -1;
         if (prevIndex !== -1) {
           playSegment(
-            laituData[prevIndex].startTime,
-            laituData[prevIndex].endTime,
+            transcript[prevIndex].startTime,
+            transcript[prevIndex].endTime,
             prevIndex
           );
         }
@@ -433,7 +440,7 @@
               disabled={searchQuery
                 ? filteredData.findIndex(
                     (item) =>
-                      laituData.findIndex(
+                      transcript.findIndex(
                         (l) => l.startTime === item.startTime
                       ) === activeCardIndex
                   ) <= 0
@@ -497,12 +504,12 @@
               disabled={searchQuery
                 ? filteredData.findIndex(
                     (item) =>
-                      laituData.findIndex(
+                      transcript.findIndex(
                         (l) => l.startTime === item.startTime
                       ) === activeCardIndex
                   ) >=
                   filteredData.length - 1
-                : activeCardIndex >= laituData.length - 1}
+                : activeCardIndex >= transcript.length - 1}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -611,14 +618,14 @@
     >
       {#each filteredData as segment, index}
         <div
-          data-index={laituData.findIndex(
+          data-index={transcript.findIndex(
             (item) => item.startTime === segment.startTime
           )}
           class="card bg-base-100 shadow-lg transition-all duration-300 hover:shadow-xl"
-          class:ring-2={laituData.findIndex(
+          class:ring-2={transcript.findIndex(
             (item) => item.startTime === segment.startTime
           ) === activeCardIndex}
-          class:ring-primary={laituData.findIndex(
+          class:ring-primary={transcript.findIndex(
             (item) => item.startTime === segment.startTime
           ) === activeCardIndex}
           bind:this={activeCard}
@@ -631,7 +638,7 @@
                 class="flex items-center justify-center bg-primary/10 rounded-lg min-w-[2.5rem] h-8 px-2"
               >
                 <span class="font-bold text-primary">
-                  {laituData.findIndex(
+                  {transcript.findIndex(
                     (item) => item.startTime === segment.startTime
                   ) + 1}
                 </span>
@@ -643,12 +650,12 @@
                   playSegment(
                     segment.startTime,
                     segment.endTime,
-                    laituData.findIndex(
+                    transcript.findIndex(
                       (item) => item.startTime === segment.startTime
                     )
                   )}
               >
-                {#if isPlaying && laituData.findIndex((item) => item.startTime === segment.startTime) === activeCardIndex}
+                {#if isPlaying && transcript.findIndex((item) => item.startTime === segment.startTime) === activeCardIndex}
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     class="h-6 w-6"
