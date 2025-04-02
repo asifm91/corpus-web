@@ -2,6 +2,9 @@
   import { onMount, onDestroy } from "svelte";
   import { fade } from "svelte/transition";
   import Fuse from "fuse.js";
+  // Assuming the correct path for AudioPlayer.svelte is src/lib/AudioPlayer.svelte
+  import AudioPlayer from "../../../lib/components/AudioPlayer.svelte";
+  import TranscriptList from "../../../lib/components/TranscriptList.svelte";
 
   export let data;
   const transcript = data.transcript?.default;
@@ -44,7 +47,7 @@
       if (isPlaying && activeCardIndex !== -1) {
         const currentSegment = transcript[activeCardIndex];
         const existsInFiltered = filteredData.some(
-          (item) => item.startTime === currentSegment.startTime
+          (item: any) => item.startTime === currentSegment.startTime
         );
         if (!existsInFiltered) {
           // Pause audio if current segment is not in filtered results
@@ -116,7 +119,7 @@
     if (audioPlayer) {
       audioPlayer.addEventListener("timeupdate", () => {
         currentTime = audioPlayer.currentTime;
-        updateActiveCard();
+        updateActiveCard(currentTime);
       });
 
       audioPlayer.addEventListener("loadedmetadata", () => {
@@ -156,16 +159,16 @@
     }
   }
 
-  function updateActiveCard() {
+  function updateActiveCard(currentTime: number) {
     const previousIndex = activeCardIndex;
-    // First find the current segment in the full dataset
     const currentSegment = transcript.find(
-      (item) => currentTime >= item.startTime && currentTime <= item.endTime
+      (item: any) =>
+        currentTime >= item.startTime && currentTime <= item.endTime
     );
 
     if (currentSegment) {
       activeCardIndex = transcript.findIndex(
-        (item) => item.startTime === currentSegment.startTime
+        (item: any) => item.startTime === currentSegment.startTime
       );
     } else {
       activeCardIndex = -1;
@@ -194,13 +197,17 @@
     }, 3000); // Hide warning after 3 seconds
   }
 
-  function playSegment(startTime: number, endTime: number, index: number) {
+  function handlePlaySegment(
+    startTime: number,
+    endTime: number,
+    index: number,
+    shouldPlay?: boolean
+  ) {
     if (audioPlayer) {
       if (searchQuery) {
-        // Check if the segment exists in filtered results
         const existsInFiltered = filteredData.some(
-          (item) =>
-            transcript.findIndex((l) => l.startTime === item.startTime) ===
+          (item: any) =>
+            transcript.findIndex((l: any) => l.startTime === item.startTime) ===
             index
         );
 
@@ -212,180 +219,36 @@
         }
       }
 
+      // If clicking the same segment that's currently playing
       if (isPlaying && activeCardIndex === index) {
-        pausedTime = audioPlayer.currentTime;
         audioPlayer.pause();
         isPlaying = false;
-      } else {
-        if (
-          activeCardIndex === index &&
-          pausedTime >= startTime &&
-          pausedTime <= endTime
-        ) {
-          audioPlayer.currentTime = pausedTime;
-        } else {
-          audioPlayer.currentTime = startTime;
-        }
+        return;
+      }
 
-        // Add event listener for when this segment ends
-        const segmentEndHandler = () => {
-          if (audioPlayer.currentTime >= endTime) {
-            audioPlayer.removeEventListener("timeupdate", segmentEndHandler);
+      // Update the current time
+      audioPlayer.currentTime = startTime;
 
-            if (searchQuery) {
-              // Get the next filtered segment
-              const currentFilteredIndex = filteredData.findIndex(
-                (item) =>
-                  transcript.findIndex(
-                    (l) => l.startTime === item.startTime
-                  ) === index
-              );
-
-              if (currentFilteredIndex < filteredData.length - 1) {
-                const nextItem = filteredData[currentFilteredIndex + 1];
-                const nextIndex = transcript.findIndex(
-                  (item) => item.startTime === nextItem.startTime
-                );
-
-                // Only continue playing if next segment is sequential
-                if (nextIndex === index + 1) {
-                  playSegment(nextItem.startTime, nextItem.endTime, nextIndex);
-                } else {
-                  // Pause if next segment is not sequential
-                  audioPlayer.pause();
-                  isPlaying = false;
-                }
-              } else {
-                // Pause at the end of filtered results
-                audioPlayer.pause();
-                isPlaying = false;
-              }
-            } else {
-              // Normal sequential playback for unfiltered view
-              if (index < transcript.length - 1) {
-                playSegment(
-                  transcript[index + 1].startTime,
-                  transcript[index + 1].endTime,
-                  index + 1
-                );
-              }
-            }
-          }
-        };
-
-        audioPlayer.addEventListener("timeupdate", segmentEndHandler);
+      // Only play if we're explicitly told to play or if we're clicking directly on a segment
+      if (
+        shouldPlay === true ||
+        (shouldPlay === undefined && activeCardIndex === index)
+      ) {
         audioPlayer.play();
         isPlaying = true;
-        activeCardIndex = index;
+      }
 
-        if (autoScrollEnabled) {
-          scrollToActiveCard();
-        }
+      activeCardIndex = index;
+
+      if (autoScrollEnabled) {
+        scrollToActiveCard();
       }
     }
   }
 
-  function togglePlay() {
-    if (audioPlayer) {
-      if (isPlaying) {
-        audioPlayer.pause();
-      } else {
-        audioPlayer.play();
-      }
-      isPlaying = !isPlaying;
-    }
-  }
-
-  function skipTime(seconds: number) {
-    if (audioPlayer) {
-      const newTime = Math.min(
-        Math.max(audioPlayer.currentTime + seconds, 0),
-        duration
-      );
-      audioPlayer.currentTime = newTime;
-    }
-  }
-
-  function goToNextSegment() {
-    if (audioPlayer && activeCardIndex !== -1) {
-      if (searchQuery) {
-        const currentFilteredIndex = filteredData.findIndex(
-          (item) =>
-            transcript.findIndex((l) => l.startTime === item.startTime) ===
-            activeCardIndex
-        );
-
-        if (currentFilteredIndex === -1) {
-          showTemporaryWarning("Current segment is not in search results");
-          return;
-        }
-
-        if (currentFilteredIndex >= filteredData.length - 1) {
-          showTemporaryWarning("No more segments in search results");
-          return;
-        }
-
-        const nextItem = filteredData[currentFilteredIndex + 1];
-        const nextIndex = transcript.findIndex(
-          (item) => item.startTime === nextItem.startTime
-        );
-        playSegment(nextItem.startTime, nextItem.endTime, nextIndex);
-      } else {
-        // Normal next segment behavior
-        const nextIndex =
-          activeCardIndex < transcript.length - 1 ? activeCardIndex + 1 : -1;
-        if (nextIndex !== -1) {
-          playSegment(
-            transcript[nextIndex].startTime,
-            transcript[nextIndex].endTime,
-            nextIndex
-          );
-        }
-      }
-    }
-  }
-
-  function goToPreviousSegment() {
-    if (audioPlayer && activeCardIndex !== -1) {
-      if (searchQuery) {
-        const currentFilteredIndex = filteredData.findIndex(
-          (item) =>
-            transcript.findIndex((l) => l.startTime === item.startTime) ===
-            activeCardIndex
-        );
-
-        if (currentFilteredIndex === -1) {
-          showTemporaryWarning("Current segment is not in search results");
-          return;
-        }
-
-        if (currentFilteredIndex <= 0) {
-          showTemporaryWarning("No previous segments in search results");
-          return;
-        }
-
-        const prevItem = filteredData[currentFilteredIndex - 1];
-        const prevIndex = transcript.findIndex(
-          (item) => item.startTime === prevItem.startTime
-        );
-        playSegment(prevItem.startTime, prevItem.endTime, prevIndex);
-      } else {
-        // Normal previous segment behavior
-        const prevIndex = activeCardIndex > 0 ? activeCardIndex - 1 : -1;
-        if (prevIndex !== -1) {
-          playSegment(
-            transcript[prevIndex].startTime,
-            transcript[prevIndex].endTime,
-            prevIndex
-          );
-        }
-      }
-    }
-  }
-
-  function handleAutoScrollToggle(event: Event) {
-    autoScrollEnabled = (event.target as HTMLInputElement).checked;
-    if (autoScrollEnabled) {
+  function handleAutoScrollToggle(enabled: boolean) {
+    autoScrollEnabled = enabled;
+    if (enabled) {
       scrollToActiveCard();
     }
   }
@@ -399,335 +262,27 @@
 </script>
 
 <div class="container mx-auto px-4 py-8">
-  <!-- Main Audio Player -->
-  <div class="bg-neutral rounded-lg shadow-lg p-6 mb-8" data-aos="fade-down">
-    {#if isLoading}
-      <div class="flex items-center justify-center p-8">
-        <div class="loading loading-spinner loading-lg text-primary"></div>
-        <span class="ml-4">Loading audio file...</span>
-      </div>
-    {:else if audioError}
-      <div class="alert alert-error">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="stroke-current shrink-0 h-6 w-6"
-          fill="none"
-          viewBox="0 0 24 24"
-          ><path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-          /></svg
-        >
-        <span
-          >We're sorry, but the audio file you're trying to access is not
-          available. Please try again later.</span
-        >
-      </div>
-    {:else}
-      <audio bind:this={audioPlayer} src={audioSrc} class="w-full mb-4">
-        <track kind="captions" />
-      </audio>
+  <AudioPlayer
+    {transcript}
+    {audio_mp3}
+    {audio_wav}
+    bind:audioPlayer
+    bind:isPlaying
+    bind:activeCardIndex
+    bind:autoScrollEnabled
+    onPlaySegment={handlePlaySegment}
+    onAutoScrollToggle={handleAutoScrollToggle}
+    onTimeUpdate={updateActiveCard}
+  />
 
-      <div class="block md:flex items-center md:gap-0 gap-5">
-        <div class="flex md:flex-col items-center justify-between mr-5">
-          <div class="flex items-center gap-5 justify-center">
-            <!-- Previous Segment -->
-            <button
-              class="btn btn-circle btn-primary btn-sm"
-              on:click={goToPreviousSegment}
-              disabled={searchQuery
-                ? filteredData.findIndex(
-                    (item) =>
-                      transcript.findIndex(
-                        (l) => l.startTime === item.startTime
-                      ) === activeCardIndex
-                  ) <= 0
-                : activeCardIndex <= 0}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-5 w-5"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M11 19l-7-7 7-7m8 14l-7-7 7-7"
-                />
-              </svg>
-            </button>
-
-            <!-- Play/Pause -->
-            <button class="btn btn-circle btn-primary" on:click={togglePlay}>
-              {#if isPlaying}
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-10 w-10"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M10 9v6m4-6v6"
-                  />
-                </svg>
-              {:else}
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-10 w-10"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
-                  />
-                </svg>
-              {/if}
-            </button>
-
-            <!-- Next Segment -->
-            <button
-              class="btn btn-circle btn-primary btn-sm"
-              on:click={goToNextSegment}
-              disabled={searchQuery
-                ? filteredData.findIndex(
-                    (item) =>
-                      transcript.findIndex(
-                        (l) => l.startTime === item.startTime
-                      ) === activeCardIndex
-                  ) >=
-                  filteredData.length - 1
-                : activeCardIndex >= transcript.length - 1}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-5 w-5"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M13 5l7 7-7 7M5 5l7 7-7 7"
-                />
-              </svg>
-            </button>
-          </div>
-          <div class="w-fit">
-            <label class="label cursor-pointer">
-              <span class="label-text mr-2">Auto-scroll</span>
-              <input
-                type="checkbox"
-                class="toggle toggle-primary"
-                bind:checked={autoScrollEnabled}
-                on:change={handleAutoScrollToggle}
-              />
-            </label>
-          </div>
-        </div>
-        <div class="flex-1">
-          <div class="text-sm font-medium mb-1 flex justify-between">
-            <span>{formatTime(currentTime)}</span>
-            <span>{formatTime(duration)}</span>
-          </div>
-          <input
-            type="range"
-            min="0"
-            max={duration}
-            step="0.1"
-            bind:value={currentTime}
-            class="range range-primary range-sm"
-            on:input={() => {
-              if (audioPlayer) {
-                audioPlayer.currentTime = currentTime;
-                updateActiveCard();
-                if (autoScrollEnabled) {
-                  scrollToActiveCard();
-                }
-              }
-            }}
-            on:change={() => {
-              if (audioPlayer) {
-                audioPlayer.currentTime = currentTime;
-                updateActiveCard();
-                if (autoScrollEnabled) {
-                  scrollToActiveCard();
-                }
-              }
-            }}
-          />
-        </div>
-      </div>
-    {/if}
-  </div>
-
-  <!-- Search input with clear button -->
-  <div class="mb-4 relative">
-    <input
-      type="text"
-      placeholder="Search in Laitu or English text..."
-      class="input input-bordered w-full pr-10"
-      bind:value={searchQuery}
-    />
-    {#if searchQuery}
-      <button
-        class="absolute right-3 top-1/2 -translate-y-1/2 btn btn-ghost btn-sm btn-circle"
-        on:click={() => (searchQuery = "")}
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-5 w-5"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M6 18L18 6M6 6l12 12"
-          />
-        </svg>
-      </button>
-    {/if}
-  </div>
-
-  <!-- Only show transcript cards if audio is loaded successfully -->
-  {#if !isLoading && !audioError}
-    <!-- Transcript Cards -->
-    <div
-      class="flex flex-col gap-4 p-3 overflow-auto"
-      bind:this={cardsContainer}
-      on:scroll={handleScroll}
-      data-aos="fade-up"
-      style="max-height: calc(100vh - 300px);"
-    >
-      {#each filteredData as segment, index}
-        <div
-          data-index={transcript.findIndex(
-            (item) => item.startTime === segment.startTime
-          )}
-          class="card bg-base-100 shadow-lg transition-all duration-300 hover:shadow-xl"
-          class:ring-2={transcript.findIndex(
-            (item) => item.startTime === segment.startTime
-          ) === activeCardIndex}
-          class:ring-primary={transcript.findIndex(
-            (item) => item.startTime === segment.startTime
-          ) === activeCardIndex}
-          bind:this={activeCard}
-          transition:fade
-        >
-          <div class="card-body">
-            <div class="flex items-center gap-4">
-              <!-- Update serial number with better styling -->
-              <div
-                class="flex items-center justify-center bg-primary/10 rounded-lg min-w-[2.5rem] h-8 px-2"
-              >
-                <span class="font-bold text-primary">
-                  {transcript.findIndex(
-                    (item) => item.startTime === segment.startTime
-                  ) + 1}
-                </span>
-              </div>
-
-              <button
-                class="btn btn-circle btn-sm btn-primary"
-                on:click={() =>
-                  playSegment(
-                    segment.startTime,
-                    segment.endTime,
-                    transcript.findIndex(
-                      (item) => item.startTime === segment.startTime
-                    )
-                  )}
-              >
-                {#if isPlaying && transcript.findIndex((item) => item.startTime === segment.startTime) === activeCardIndex}
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-6 w-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M10 9v6m4-6v6"
-                    />
-                  </svg>
-                {:else}
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-6 w-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
-                    />
-                  </svg>
-                {/if}
-              </button>
-              <div
-                class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2"
-              >
-                <span class="text-sm opacity-70">
-                  {formatTime(segment.startTime)} - {formatTime(
-                    segment.endTime
-                  )}
-                </span>
-              </div>
-            </div>
-
-            <p class="text-lg font-medium mt-2">{segment.laituText}</p>
-            <p class="text-base opacity-70">{segment.engText}</p>
-          </div>
-        </div>
-      {/each}
-    </div>
-  {/if}
-
-  <!-- Warning message -->
-  {#if showWarning}
-    <div
-      class="alert alert-warning shadow-lg mb-4 transition-all duration-300"
-      transition:fade
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        class="stroke-current shrink-0 h-6 w-6"
-        fill="none"
-        viewBox="0 0 24 24"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-        />
-      </svg>
-      <span>{warningMessage}</span>
-    </div>
-  {/if}
+  <TranscriptList
+    {transcript}
+    {activeCardIndex}
+    {isPlaying}
+    onPlaySegment={handlePlaySegment}
+    {formatTime}
+    onScroll={handleScroll}
+  />
 </div>
 
 <style>
