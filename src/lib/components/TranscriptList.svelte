@@ -15,7 +15,7 @@
   export let onScroll: () => void;
 
   let searchQuery = "";
-  let filteredData = transcript;
+  let searchResults: any[] = [];
   let showWarning = false;
   let warningMessage = "";
 
@@ -35,10 +35,18 @@
   // Search functionality with full result objects
   $: {
     if (searchQuery) {
-      filteredData = fuse.search(searchQuery);
+      searchResults = fuse.search(searchQuery);
     } else {
-      filteredData = transcript.map((item) => ({ item }));
+      searchResults = [];
     }
+  }
+
+  // Helper function to check if an item is in search results
+  function isInSearchResults(segment: any): any {
+    if (!searchQuery) return { item: segment }; // Return all items when no search
+    return searchResults.find(
+      (result) => result.item.startTime === segment.startTime
+    );
   }
 
   function showTemporaryWarning(message: string) {
@@ -55,14 +63,8 @@
     index: number
   ) {
     if (searchQuery) {
-      const existsInFiltered = filteredData.some(
-        (item: any) =>
-          transcript.findIndex(
-            (l: any) => l.startTime === item.item.startTime
-          ) === index
-      );
-
-      if (!existsInFiltered) {
+      const matchResult = isInSearchResults(transcript[index]);
+      if (!matchResult) {
         showTemporaryWarning(
           "This segment is not in the current search results"
         );
@@ -108,7 +110,7 @@
 
   {#if searchQuery}
     <div class="text-sm text-base-content/70 mt-2">
-      Found {filteredData.length} matching segments
+      Found {searchResults.length} matching segments
     </div>
   {/if}
 </div>
@@ -120,19 +122,25 @@
   data-aos="fade-up"
   style="max-height: calc(100vh - 300px);"
 >
-  {#each filteredData as result, i}
-    {@const index = transcript.findIndex(
-      (item) => item.startTime === result.item.startTime
-    )}
-    <TranscriptCard
-      segment={result.item}
-      {index}
-      isActive={index === activeCardIndex}
-      {isPlaying}
-      searchResult={result}
-      onPlay={handlePlaySegment}
-      {formatTime}
-    />
+  {#each transcript as segment, index}
+    {@const searchResult = isInSearchResults(segment)}
+    {#if !searchQuery || searchResult}
+      <div
+        transition:fade
+        class:opacity-100={!searchQuery || searchResult}
+        class:hidden={searchQuery && !searchResult}
+      >
+        <TranscriptCard
+          {segment}
+          {index}
+          isActive={index === activeCardIndex}
+          {isPlaying}
+          {searchResult}
+          onPlay={handlePlaySegment}
+          {formatTime}
+        />
+      </div>
+    {/if}
   {/each}
 </div>
 
