@@ -73,7 +73,7 @@
           >
         </li>
         <li><a href="#about">About</a></li>
-        <li><a href="#register">Register</a></li>
+        <li><a href="/register/">Register</a></li>
       </ul>
     </div>
     <a href="/" class="font-display text-xl text-primary" data-aos="fade-right"
@@ -102,6 +102,7 @@
     <a
       class="btn"
       style="background-color: #1464CC; color: white;"
+      href="/register/"
       data-aos="fade-left">Register</a
     >
   </div>
