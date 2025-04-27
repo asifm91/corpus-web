@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import AOS from "aos";
   import "aos/dist/aos.css";
+  import Button from "$lib/components/Button.svelte";
 
   onMount(() => {
     // Initialize AOS
@@ -66,7 +67,7 @@
         class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52"
       >
         <li><a href="#home">Home</a></li>
-        <li><a href="#Corpora">Corpora</a></li>
+        <li><a href="/Corpora/laitu">Corpora</a></li>
         <li>
           <a href="#endangered"
             >Endangered Languages of South and Southeast Asia</a
@@ -86,7 +87,9 @@
         <a href="#home" data-aos="fade-down" data-aos-delay="100">Home</a>
       </li>
       <li>
-        <a href="#Corpora" data-aos="fade-down" data-aos-delay="200">Corpora</a>
+        <a href="/corpora/laitu" data-aos="fade-down" data-aos-delay="200"
+          >Corpora</a
+        >
       </li>
       <li>
         <a href="#endangered" data-aos="fade-down" data-aos-delay="300"
@@ -99,11 +102,13 @@
     </ul>
   </div>
   <div class="navbar-end">
-    <a
-      class="btn"
-      style="background-color: #1464CC; color: white;"
-      data-aos="fade-left">Register</a
+    <Button
+      variant="primary"
+      onClick={() => (window.location.href = "/register")}
+      dataAos="fade-left"
     >
+      Register
+    </Button>
   </div>
 </nav>
 
@@ -123,12 +128,15 @@
         context, and native speaker recordings of indigenous languages of South
         and Southeast Asia and searchable annotated corpora.
       </p>
-      <button
-        class="btn"
-        style="background-color: #1464CC; color: white;"
-        data-aos="fade-up"
-        data-aos-delay="400">Start Contributing</button
+      <Button
+        variant="primary"
+        size="lg"
+        onClick={() => (window.location.href = "/register")}
+        dataAos="fade-up"
+        dataAosDelay="400"
       >
+        Start Contributing
+      </Button>
     </div>
   </div>
 </div>
@@ -144,7 +152,7 @@
     </h2>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
       <!-- Corpus Card 1 -->
-       <div></div>
+      <div></div>
       <div
         class="card bg-neutral shadow-xl"
         data-aos="fade-up"
@@ -154,13 +162,12 @@
           <h3 class="card-title font-display">Laitu Language</h3>
           <p>1 Speaker</p>
           <div class="card-actions justify-end">
-            <a
-              href="/corpora/laitu/"
-              class="btn"
-              style="background-color: #1464CC; color: white;"
+            <Button
+              variant="primary"
+              onClick={() => (window.location.href = "/corpora/laitu/")}
             >
               View
-            </a>
+            </Button>
           </div>
         </div>
       </div>
@@ -236,9 +243,13 @@
 
     <!-- View All Button -->
     <div class="text-center mt-8">
-      <button class="btn btn-primary" data-aos="fade-up"
-        >View All Endangered Languages</button
+      <Button
+        variant="primary"
+        onClick={() => (window.location.href = "/corpora")}
+        dataAos="fade-up"
       >
+        View All Endangered Languages
+      </Button>
     </div>
   </div>
 </section>
