@@ -74,7 +74,7 @@
           >
         </li>
         <li><a href="#about">About</a></li>
-        <li><a href="#register">Register</a></li>
+        <li><a href="/register/">Register</a></li>
       </ul>
     </div>
     <a href="/" class="font-display text-xl text-primary" data-aos="fade-right"
@@ -102,6 +102,7 @@
     </ul>
   </div>
   <div class="navbar-end">
+
     <Button
       variant="primary"
       onClick={() => (window.location.href = "/register")}
