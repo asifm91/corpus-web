@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import AOS from "aos";
   import "aos/dist/aos.css";
+  import Button from "$lib/components/Button.svelte";
 
   onMount(() => {
     AOS.init({
@@ -101,15 +102,15 @@
             </div>
           {/if}
 
-          <button
+          <Button
             type="submit"
-            class="btn w-full"
-            style="background-color: #1464CC; color: white;"
-            data-aos="fade-up"
-            data-aos-delay="200"
+            variant="primary"
+            fullWidth={true}
+            dataAos="fade-up"
+            dataAosDelay="200"
           >
             Send Reset Link
-          </button>
+          </Button>
 
           <div class="text-center mt-4">
             <p class="text-sm">
@@ -144,13 +145,9 @@
             password. If you don't see the email, check your spam folder.
           </p>
 
-          <button
-            class="btn"
-            style="background-color: #1464CC; color: white;"
-            on:click={() => (isSubmitted = false)}
-          >
+          <Button variant="primary" onClick={() => (isSubmitted = false)}>
             Try Another Email
-          </button>
+          </Button>
 
           <div class="text-center mt-4">
             <p class="text-sm">

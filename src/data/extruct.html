@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      const x = {
+        eng_phase: "",
+        phonetic_phase: "",
+        time: [12.4, 34.65],
+        individual_eng: [
+          { text: "", time: [12.3, 13.5] },
+          { text: "", time: [13.5, 15.5] },
+        ],
+        individual_phonetics: [
+          { text: "", time: [12.3, 13.5] },
+          { text: "", time: [13.5, 15.5] },
+        ],
+      };
+
+      fetch("./Laitu_main.json")
+        .then((res) => res.json())
+        .then((data) => {
+          data["contains"].map((i) => {
+            if (
+              i.label.includes("_phrase-lit-en") || // eng phase
+              i.label.includes("_phrase-txt-clj_MM_X_ETIC") || // laitu phase
+              //
+              i.label.includes("_morph-txt-clj-MM-fonipa-x-etic") || // individual laitu word
+              i.label.includes("_morph-gls-en") // individual eng word
+            ) {
+              console.log(i.label, i["first"]);
+
+              i["first"]["items"].map((j) => {
+                console.log(j["body"]["value"]);
+                console.log(j["target"][0]["id"].split("#")[1]);
+              });
+            }
+          });
+        });
+    </script>
+  </body>
+</html>

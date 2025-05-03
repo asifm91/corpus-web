@@ -1,25 +1,33 @@
-<script lang="ts">
+<script>
   import { fade } from "svelte/transition";
   import { highlightText } from "../utils/highlight";
 
-  export let segment: any;
-  export let index: number;
-  export let isActive: boolean;
-  export let isPlaying: boolean;
-  export let searchResult: any = null;
-  export let onPlay: (
-    startTime: number,
-    endTime: number,
-    index: number
-  ) => void;
-  export let formatTime: (seconds: number) => string;
+  /** @type {{segNum:string, eng_phase: string, phonetic_phase: string, time: [number, number], individual_eng: Array<{ text: string, time: [number, number] }>, individual_phonetics: Array<{ text: string, time: [number, number] }> }} */
+  export let segment = {
+    segNum: "",
+    eng_phase: "",
+    phonetic_phase: "",
+    time: [0, 0],
+    individual_eng: [],
+    individual_phonetics: [],
+  };
+  export let index = 0;
+  export let isActive = false;
+  export let isPlaying = false;
+  /** @type {Fuse.FuseResult<any> | null} */
+  export let searchResult = null;
+  /** @type {(startTime: number, endTime: number, index: number) => void} */
+  export let onPlay = (startTime, endTime, index) => {};
+  /** @type {(seconds: number) => string} */
+  export let formatTime = (seconds) => "";
 
   function handlePlay() {
-    onPlay(segment.startTime, segment.endTime, index);
+    onPlay(segment.time[0], segment.time[1], index);
+    isPlaying = !isPlaying;
   }
 
-  $: highlightedLaitu = highlightText(segment.laituText, searchResult);
-  $: highlightedEng = highlightText(segment.engText, searchResult);
+  $: highlightedPhonetic = highlightText(segment.phonetic_phase, searchResult);
+  $: highlightedEng = highlightText(segment.eng_phase, searchResult);
 </script>
 
 <div
@@ -36,7 +44,7 @@
         class="flex items-center justify-center bg-primary/10 rounded-lg min-w-[2.5rem] h-8 px-2"
       >
         <span class="font-bold text-primary">
-          {index + 1}
+          {segment.segNum}
         </span>
       </div>
 
@@ -78,17 +86,49 @@
       <!-- Timestamp -->
       <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
         <span class="text-sm opacity-70">
-          {formatTime(segment.startTime)} - {formatTime(segment.endTime)}
+          {formatTime(segment.time[0])} - {formatTime(segment.time[1])}
         </span>
       </div>
     </div>
 
     <!-- Text content with highlighting -->
     <p class="text-lg font-medium mt-2">
-      {@html highlightedLaitu}
+      {@html highlightedPhonetic}
     </p>
     <p class="text-base opacity-70">
       {@html highlightedEng}
     </p>
+
+    <!-- Individual words -->
+    {#if segment.individual_eng.length > 0}
+      <div class="mt-2 pt-2 border-t border-base-200 overflow-x-auto">
+        <div class="overflow-x-auto">
+          <table class="w-fit">
+            <tbody>
+              <tr class="whitespace-nowrap">
+                <td class="text-sm border px-2">
+                  {segment.speaker}_morph-gls-en
+                </td>
+                {#each segment.individual_eng as word}
+                  <td class="text-sm opacity-70 border px-2">
+                    {word.text}
+                  </td>
+                {/each}
+              </tr>
+              <tr class="whitespace-nowrap">
+                <td class="text-sm font-medium border px-2">
+                  {segment.speaker}_morph-txt-clj-MM-fonipa-x-etic
+                </td>
+                {#each segment.individual_phonetics as word}
+                  <td class="text-sm font-medium opacity-70 border px-2">
+                    {word.text}
+                  </td>
+                {/each}
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    {/if}
   </div>
 </div>

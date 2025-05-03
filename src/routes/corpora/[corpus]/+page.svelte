@@ -7,9 +7,10 @@
   import TranscriptList from "../../../lib/components/TranscriptList.svelte";
 
   export let data;
-  const transcript = data.transcript?.default;
-  const audio_mp3 = data.audio_mp3;
-  const audio_wav = data.audio_wav;
+  const transcript = data?.transcript;
+  console.log(data)
+  const audio_mp3 = data?.audio_mp3;
+  const audio_wav = data?.audio_wav;
 
   let isLoading = true;
   let audioError = false;

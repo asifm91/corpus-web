@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import AOS from "aos";
   import "aos/dist/aos.css";
+  import Button from "$lib/components/Button.svelte";
 
   onMount(() => {
     AOS.init({
@@ -115,15 +116,15 @@
           >
         </div>
 
-        <button
+        <Button
           type="submit"
-          class="btn w-full"
-          style="background-color: #1464CC; color: white;"
-          data-aos="fade-up"
-          data-aos-delay="200"
+          variant="primary"
+          fullWidth={true}
+          dataAos="fade-up"
+          dataAosDelay="200"
         >
           Sign In
-        </button>
+        </Button>
 
         <div class="text-center mt-4">
           <p class="text-sm">

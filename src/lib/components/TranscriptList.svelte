@@ -3,32 +3,32 @@
   import Fuse from "fuse.js";
   import TranscriptCard from "./TranscriptCard.svelte";
 
-  export let transcript: any[];
-  export let activeCardIndex: number;
-  export let isPlaying: boolean;
-  export let onPlaySegment: (
-    startTime: number,
-    endTime: number,
-    index: number
-  ) => void;
-  export let formatTime: (seconds: number) => string;
-  export let onScroll: () => void;
+  /** @type {Array<{ eng_phase: string, phonetic_phase: string, time: [number, number], individual_eng: Array<{ text: string, time: [number, number] }>, individual_phonetics: Array<{ text: string, time: [number, number] }> }>} */
+  export let transcript = [];
+  export let activeCardIndex = 0;
+  export let isPlaying = false;
+  /** @type {(startTime: number, endTime: number, index: number) => void} */
+  export let onPlaySegment = (startTime, endTime, index) => {};
+  /** @type {(seconds: number) => string} */
+  export let formatTime = (seconds) => "";
+  export let onScroll = () => {};
 
   let searchQuery = "";
-  let searchResults: any[] = [];
+  /** @type {Array<Fuse.FuseResult<any>>} */
+  let searchResults = [];
   let showWarning = false;
   let warningMessage = "";
 
   // Configure Fuse.js with improved options for partial matching
   const fuseOptions = {
-    keys: ["laituText", "engText"],
+    keys: ["eng_phase", "phonetic_phase"],
     shouldSort: true,
     threshold: 0.3,
     ignoreLocation: true,
     minMatchCharLength: 1,
     findAllMatches: true,
-    includeMatches: true, // Enable match information
-    useExtendedSearch: true, // Enable extended search
+    includeMatches: true,
+    useExtendedSearch: true,
   };
   const fuse = new Fuse(transcript, fuseOptions);
 
@@ -41,15 +41,16 @@
     }
   }
 
-  // Helper function to check if an item is in search results
-  function isInSearchResults(segment: any): any {
-    if (!searchQuery) return { item: segment }; // Return all items when no search
+  /** @type {(segment: any) => Fuse.FuseResult<any> | { item: any }} */
+  function isInSearchResults(segment) {
+    if (!searchQuery) return { item: segment };
     return searchResults.find(
-      (result) => result.item.startTime === segment.startTime
+      (result) => result.item.time[0] === segment.time[0]
     );
   }
 
-  function showTemporaryWarning(message: string) {
+  /** @type {(message: string) => void} */
+  function showTemporaryWarning(message) {
     warningMessage = message;
     showWarning = true;
     setTimeout(() => {
@@ -57,11 +58,8 @@
     }, 3000);
   }
 
-  function handlePlaySegment(
-    startTime: number,
-    endTime: number,
-    index: number
-  ) {
+  /** @type {(startTime: number, endTime: number, index: number) => void} */
+  function handlePlaySegment(startTime, endTime, index) {
     if (searchQuery) {
       const matchResult = isInSearchResults(transcript[index]);
       if (!matchResult) {
@@ -71,7 +69,6 @@
         return;
       }
     }
-
     onPlaySegment(startTime, endTime, index);
   }
 </script>
