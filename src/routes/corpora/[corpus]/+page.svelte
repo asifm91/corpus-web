@@ -8,7 +8,7 @@
 
   export let data;
   const transcript = data?.transcript;
-  console.log(data)
+  console.log(data);
   const audio_mp3 = data?.audio_mp3;
   const audio_wav = data?.audio_wav;
 

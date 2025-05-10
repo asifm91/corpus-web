@@ -106,22 +106,21 @@
           <table class="w-fit">
             <tbody>
               <tr class="whitespace-nowrap">
-                <td class="text-sm border px-2">
-                  {segment.speaker}_morph-gls-en
-                </td>
-                {#each segment.individual_eng as word}
-                  <td class="text-sm opacity-70 border px-2">
-                    {word.text}
+                {#each segment.individual_phonetics as phoneticWord}
+                  <td class="text-sm font-medium opacity-70 border px-2">
+                    {phoneticWord.text}
                   </td>
                 {/each}
               </tr>
               <tr class="whitespace-nowrap">
-                <td class="text-sm font-medium border px-2">
-                  {segment.speaker}_morph-txt-clj-MM-fonipa-x-etic
-                </td>
-                {#each segment.individual_phonetics as word}
-                  <td class="text-sm font-medium opacity-70 border px-2">
-                    {word.text}
+                {#each segment.individual_phonetics as phoneticWord}
+                  {@const matchingEngWord = segment.individual_eng.find(
+                    (eng) =>
+                      eng.time[0] === phoneticWord.time[0] &&
+                      eng.time[1] === phoneticWord.time[1]
+                  )}
+                  <td class="text-sm opacity-70 border px-2">
+                    {matchingEngWord ? matchingEngWord.text : ""}
                   </td>
                 {/each}
               </tr>

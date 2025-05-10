@@ -6,7 +6,7 @@
   /** @type {Array<{ eng_phase: string, phonetic_phase: string, time: [number, number], individual_eng: Array<{ text: string, time: [number, number] }>, individual_phonetics: Array<{ text: string, time: [number, number] }> }>} */
   export let transcript = [];
   export let activeCardIndex = 0;
-  export let isPlaying = false;
+  export let isPlaying = true;
   /** @type {(startTime: number, endTime: number, index: number) => void} */
   export let onPlaySegment = (startTime, endTime, index) => {};
   /** @type {(seconds: number) => string} */
