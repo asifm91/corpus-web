@@ -22,8 +22,13 @@
   export let formatTime = (seconds) => "";
 
   function handlePlay() {
-    onPlay(segment.time[0], segment.time[1], index);
-    isPlaying = !isPlaying;
+    // If this card is already active and playing, we want to pause
+    if (isActive && isPlaying) {
+      onPlay(segment.time[0], segment.time[1], index);
+    } else {
+      // If this card is not active or not playing, we want to play
+      onPlay(segment.time[0], segment.time[1], index);
+    }
   }
 
   $: highlightedPhonetic = highlightText(segment.phonetic_phase, searchResult);
@@ -50,7 +55,7 @@
 
       <!-- Play/Pause button -->
       <button class="btn btn-circle btn-sm btn-primary" on:click={handlePlay}>
-        {#if isPlaying && isActive}
+        {#if isActive && isPlaying}
           <svg
             xmlns="http://www.w3.org/2000/svg"
             class="h-6 w-6"

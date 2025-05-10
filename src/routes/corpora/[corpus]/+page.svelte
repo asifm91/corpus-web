@@ -48,7 +48,7 @@
       if (isPlaying && activeCardIndex !== -1) {
         const currentSegment = transcript[activeCardIndex];
         const existsInFiltered = filteredData.some(
-          (item: any) => item.startTime === currentSegment.startTime
+          (item: any) => item.time[0] === currentSegment.time[0]
         );
         if (!existsInFiltered) {
           // Pause audio if current segment is not in filtered results
@@ -163,14 +163,19 @@
   function updateActiveCard(currentTime: number) {
     const previousIndex = activeCardIndex;
     const currentSegment = transcript.find(
-      (item: any) =>
-        currentTime >= item.startTime && currentTime <= item.endTime
+      (item: any) => currentTime >= item.time[0] && currentTime <= item.time[1]
     );
 
     if (currentSegment) {
       activeCardIndex = transcript.findIndex(
-        (item: any) => item.startTime === currentSegment.startTime
+        (item: any) => item.time[0] === currentSegment.time[0]
       );
+
+      // Stop playback if we've reached the end of the current segment
+      if (currentTime >= currentSegment.time[1]) {
+        audioPlayer.pause();
+        isPlaying = false;
+      }
     } else {
       activeCardIndex = -1;
     }
@@ -208,7 +213,7 @@
       if (searchQuery) {
         const existsInFiltered = filteredData.some(
           (item: any) =>
-            transcript.findIndex((l: any) => l.startTime === item.startTime) ===
+            transcript.findIndex((l: any) => l.time[0] === item.time[0]) ===
             index
         );
 
@@ -230,15 +235,9 @@
       // Update the current time
       audioPlayer.currentTime = startTime;
 
-      // Only play if we're explicitly told to play or if we're clicking directly on a segment
-      if (
-        shouldPlay === true ||
-        (shouldPlay === undefined && activeCardIndex === index)
-      ) {
-        audioPlayer.play();
-        isPlaying = true;
-      }
-
+      // Play the audio
+      audioPlayer.play();
+      isPlaying = true;
       activeCardIndex = index;
 
       if (autoScrollEnabled) {
