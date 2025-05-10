@@ -6,8 +6,36 @@
   import AudioPlayer from "../../../lib/components/AudioPlayer.svelte";
   import TranscriptList from "../../../lib/components/TranscriptList.svelte";
   import CorpusMetadata from "../../../lib/components/CorpusMetadata.svelte";
+  import Navbar from "../../../lib/components/Navbar.svelte";
+  import Footer from "../../../lib/components/Footer.svelte";
 
-  export let data;
+  interface PageData {
+    id: string;
+    title: string;
+    language: string;
+    dialect: string;
+    country: string;
+    location: {
+      longitude: number;
+      latitude: number;
+    };
+    audioFormats: string[];
+    genres: string[];
+    speakers: Array<{ age: number; gender: string }>;
+    audio_mp3: any;
+    audio_wav: any;
+    transcript: Array<{
+      speaker: string;
+      segNum: string;
+      eng_phase: string;
+      phonetic_phase: string;
+      time: [number, number];
+      individual_eng: Array<{ text: string; time: [number, number] }>;
+      individual_phonetics: Array<{ text: string; time: [number, number] }>;
+    }>;
+  }
+
+  export let data: PageData;
   const transcript = data?.transcript;
   console.log(data);
   const audio_mp3 = data?.audio_mp3;
@@ -15,14 +43,14 @@
 
   // Add metadata
   const metadata = {
-    id: data?.corpus || "",
+    id: data?.id || "",
     title: data?.title || "",
     language: data?.language || "",
     dialect: data?.dialect || "",
     country: data?.country || "",
     location: {
-      longitude: data?.longitude || 0,
-      latitude: data?.latitude || 0,
+      longitude: data?.location?.longitude || 0,
+      latitude: data?.location?.latitude || 0,
     },
     audioLength: 0, // Will be updated when audio is loaded
     audioFormats: ["MP3", "WAV"],
@@ -285,6 +313,7 @@
 </script>
 
 <div class="container mx-auto px-4 py-8">
+  <Navbar />
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <!-- Left column: Audio player and cards -->
     <div class="lg:col-span-2 space-y-6">
@@ -317,6 +346,8 @@
     </div>
   </div>
 </div>
+
+<Footer />
 
 <style>
   /* Add any additional custom styles here */
