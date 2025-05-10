@@ -1,27 +1,47 @@
 <script lang="ts">
   import { fade } from "svelte/transition";
   import Fuse from "fuse.js";
+  import type { FuseResult } from "fuse.js";
   import TranscriptCard from "./TranscriptCard.svelte";
 
-  /** @type {Array<{ eng_phase: string, phonetic_phase: string, time: [number, number], individual_eng: Array<{ text: string, time: [number, number] }>, individual_phonetics: Array<{ text: string, time: [number, number] }> }>} */
-  export let transcript = [];
+  interface TranscriptSegment {
+    speaker: string;
+    segNum: string;
+    eng_phase: string;
+    phonetic_phase: string;
+    time: [number, number];
+    individual_eng: Array<{ text: string; time: [number, number] }>;
+    individual_phonetics: Array<{ text: string; time: [number, number] }>;
+  }
+
+  /** @type {Array<TranscriptSegment>} */
+  export let transcript: TranscriptSegment[] = [];
   export let activeCardIndex = 0;
   export let isPlaying = true;
   /** @type {(startTime: number, endTime: number, index: number) => void} */
-  export let onPlaySegment = (startTime, endTime, index) => {};
+  export let onPlaySegment = (
+    startTime: number,
+    endTime: number,
+    index: number
+  ) => {};
   /** @type {(seconds: number) => string} */
-  export let formatTime = (seconds) => "";
+  export let formatTime = (seconds: number): string => "";
   export let onScroll = () => {};
 
   let searchQuery = "";
-  /** @type {Array<Fuse.FuseResult<any>>} */
-  let searchResults = [];
+  /** @type {Array<Fuse.FuseResult<TranscriptSegment>>} */
+  let searchResults: FuseResult<TranscriptSegment>[] = [];
   let showWarning = false;
   let warningMessage = "";
 
   // Configure Fuse.js with improved options for partial matching
   const fuseOptions = {
-    keys: ["eng_phase", "phonetic_phase"],
+    keys: [
+      "eng_phase",
+      "phonetic_phase",
+      "individual_eng.text",
+      "individual_phonetics.text",
+    ],
     shouldSort: true,
     threshold: 0.3,
     ignoreLocation: true,
@@ -41,8 +61,8 @@
     }
   }
 
-  /** @type {(segment: any) => Fuse.FuseResult<any> | { item: any }} */
-  function isInSearchResults(segment) {
+  /** @type {(segment: TranscriptSegment) => Fuse.FuseResult<TranscriptSegment> | { item: TranscriptSegment }} */
+  function isInSearchResults(segment: TranscriptSegment) {
     if (!searchQuery) return { item: segment };
     return searchResults.find(
       (result) => result.item.time[0] === segment.time[0]
@@ -50,7 +70,7 @@
   }
 
   /** @type {(message: string) => void} */
-  function showTemporaryWarning(message) {
+  function showTemporaryWarning(message: string) {
     warningMessage = message;
     showWarning = true;
     setTimeout(() => {
@@ -59,7 +79,11 @@
   }
 
   /** @type {(startTime: number, endTime: number, index: number) => void} */
-  function handlePlaySegment(startTime, endTime, index) {
+  function handlePlaySegment(
+    startTime: number,
+    endTime: number,
+    index: number
+  ) {
     if (searchQuery) {
       const matchResult = isInSearchResults(transcript[index]);
       if (!matchResult) {

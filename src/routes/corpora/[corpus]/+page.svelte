@@ -5,12 +5,35 @@
   // Assuming the correct path for AudioPlayer.svelte is src/lib/AudioPlayer.svelte
   import AudioPlayer from "../../../lib/components/AudioPlayer.svelte";
   import TranscriptList from "../../../lib/components/TranscriptList.svelte";
+  import CorpusMetadata from "../../../lib/components/CorpusMetadata.svelte";
 
   export let data;
   const transcript = data?.transcript;
   console.log(data);
   const audio_mp3 = data?.audio_mp3;
   const audio_wav = data?.audio_wav;
+
+  // Add metadata
+  const metadata = {
+    id: data?.corpus || "",
+    title: data?.title || "",
+    language: data?.language || "",
+    dialect: data?.dialect || "",
+    country: data?.country || "",
+    location: {
+      longitude: data?.longitude || 0,
+      latitude: data?.latitude || 0,
+    },
+    audioLength: 0, // Will be updated when audio is loaded
+    audioFormats: ["MP3", "WAV"],
+    genres: data?.genres || [],
+    speakers: data?.speakers || [],
+  };
+
+  // Update audio length when loaded
+  $: if (duration) {
+    metadata.audioLength = duration;
+  }
 
   let isLoading = true;
   let audioError = false;
@@ -262,27 +285,37 @@
 </script>
 
 <div class="container mx-auto px-4 py-8">
-  <AudioPlayer
-    {transcript}
-    {audio_mp3}
-    {audio_wav}
-    bind:audioPlayer
-    bind:isPlaying
-    bind:activeCardIndex
-    bind:autoScrollEnabled
-    onPlaySegment={handlePlaySegment}
-    onAutoScrollToggle={handleAutoScrollToggle}
-    onTimeUpdate={updateActiveCard}
-  />
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Left column: Audio player and cards -->
+    <div class="lg:col-span-2 space-y-6">
+      <AudioPlayer
+        {transcript}
+        {audio_mp3}
+        {audio_wav}
+        bind:audioPlayer
+        bind:isPlaying
+        bind:activeCardIndex
+        bind:autoScrollEnabled
+        onPlaySegment={handlePlaySegment}
+        onAutoScrollToggle={handleAutoScrollToggle}
+        onTimeUpdate={updateActiveCard}
+      />
 
-  <TranscriptList
-    {transcript}
-    {activeCardIndex}
-    {isPlaying}
-    onPlaySegment={handlePlaySegment}
-    {formatTime}
-    onScroll={handleScroll}
-  />
+      <TranscriptList
+        {transcript}
+        {activeCardIndex}
+        {isPlaying}
+        onPlaySegment={handlePlaySegment}
+        {formatTime}
+        onScroll={handleScroll}
+      />
+    </div>
+
+    <!-- Right column: Metadata -->
+    <div class="lg:col-span-1">
+      <CorpusMetadata {metadata} />
+    </div>
+  </div>
 </div>
 
 <style>

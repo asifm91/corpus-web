@@ -33,6 +33,16 @@
 
   $: highlightedPhonetic = highlightText(segment.phonetic_phase, searchResult);
   $: highlightedEng = highlightText(segment.eng_phase, searchResult);
+  $: highlightedIndividualPhonetics = segment.individual_phonetics.map(
+    (word) => ({
+      ...word,
+      highlighted: highlightText(word.text, searchResult),
+    })
+  );
+  $: highlightedIndividualEng = segment.individual_eng.map((word) => ({
+    ...word,
+    highlighted: highlightText(word.text, searchResult),
+  }));
 </script>
 
 <div
@@ -111,21 +121,21 @@
           <table class="w-fit">
             <tbody>
               <tr class="whitespace-nowrap">
-                {#each segment.individual_phonetics as phoneticWord}
+                {#each highlightedIndividualPhonetics as phoneticWord}
                   <td class="text-sm font-medium opacity-70 border px-2">
-                    {phoneticWord.text}
+                    {@html phoneticWord.highlighted}
                   </td>
                 {/each}
               </tr>
               <tr class="whitespace-nowrap">
-                {#each segment.individual_phonetics as phoneticWord}
-                  {@const matchingEngWord = segment.individual_eng.find(
+                {#each highlightedIndividualPhonetics as phoneticWord}
+                  {@const matchingEngWord = highlightedIndividualEng.find(
                     (eng) =>
                       eng.time[0] === phoneticWord.time[0] &&
                       eng.time[1] === phoneticWord.time[1]
                   )}
                   <td class="text-sm opacity-70 border px-2">
-                    {matchingEngWord ? matchingEngWord.text : ""}
+                    {@html matchingEngWord ? matchingEngWord.highlighted : ""}
                   </td>
                 {/each}
               </tr>
