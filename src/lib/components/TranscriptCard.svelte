@@ -22,12 +22,27 @@
   export let formatTime = (seconds) => "";
 
   function handlePlay() {
-    onPlay(segment.time[0], segment.time[1], index);
-    isPlaying = !isPlaying;
+    // If this card is already active and playing, we want to pause
+    if (isActive && isPlaying) {
+      onPlay(segment.time[0], segment.time[1], index);
+    } else {
+      // If this card is not active or not playing, we want to play
+      onPlay(segment.time[0], segment.time[1], index);
+    }
   }
 
   $: highlightedPhonetic = highlightText(segment.phonetic_phase, searchResult);
   $: highlightedEng = highlightText(segment.eng_phase, searchResult);
+  $: highlightedIndividualPhonetics = segment.individual_phonetics.map(
+    (word) => ({
+      ...word,
+      highlighted: highlightText(word.text, searchResult),
+    })
+  );
+  $: highlightedIndividualEng = segment.individual_eng.map((word) => ({
+    ...word,
+    highlighted: highlightText(word.text, searchResult),
+  }));
 </script>
 
 <div
@@ -50,7 +65,7 @@
 
       <!-- Play/Pause button -->
       <button class="btn btn-circle btn-sm btn-primary" on:click={handlePlay}>
-        {#if isPlaying && isActive}
+        {#if isActive && isPlaying}
           <svg
             xmlns="http://www.w3.org/2000/svg"
             class="h-6 w-6"
@@ -106,22 +121,21 @@
           <table class="w-fit">
             <tbody>
               <tr class="whitespace-nowrap">
-                <td class="text-sm border px-2">
-                  {segment.speaker}_morph-gls-en
-                </td>
-                {#each segment.individual_eng as word}
-                  <td class="text-sm opacity-70 border px-2">
-                    {word.text}
+                {#each highlightedIndividualPhonetics as phoneticWord}
+                  <td class="text-sm font-medium opacity-70 border px-2">
+                    {@html phoneticWord.highlighted}
                   </td>
                 {/each}
               </tr>
               <tr class="whitespace-nowrap">
-                <td class="text-sm font-medium border px-2">
-                  {segment.speaker}_morph-txt-clj-MM-fonipa-x-etic
-                </td>
-                {#each segment.individual_phonetics as word}
-                  <td class="text-sm font-medium opacity-70 border px-2">
-                    {word.text}
+                {#each highlightedIndividualPhonetics as phoneticWord}
+                  {@const matchingEngWord = highlightedIndividualEng.find(
+                    (eng) =>
+                      eng.time[0] === phoneticWord.time[0] &&
+                      eng.time[1] === phoneticWord.time[1]
+                  )}
+                  <td class="text-sm opacity-70 border px-2">
+                    {@html matchingEngWord ? matchingEngWord.highlighted : ""}
                   </td>
                 {/each}
               </tr>

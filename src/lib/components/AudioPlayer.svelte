@@ -89,13 +89,13 @@
       const nextIndex =
         activeCardIndex < transcript.length - 1 ? activeCardIndex + 1 : -1;
       if (nextIndex !== -1) {
-        const wasPlaying = isPlaying;
-        audioPlayer.currentTime = transcript[nextIndex].startTime;
+        const nextSegment = transcript[nextIndex];
+        audioPlayer.currentTime = nextSegment.time[0];
         onPlaySegment(
-          transcript[nextIndex].startTime,
-          transcript[nextIndex].endTime,
+          nextSegment.time[0],
+          nextSegment.time[1],
           nextIndex,
-          wasPlaying
+          true
         );
       }
     }
@@ -105,13 +105,13 @@
     if (audioPlayer && activeCardIndex !== -1) {
       const prevIndex = activeCardIndex > 0 ? activeCardIndex - 1 : -1;
       if (prevIndex !== -1) {
-        const wasPlaying = isPlaying;
-        audioPlayer.currentTime = transcript[prevIndex].startTime;
+        const prevSegment = transcript[prevIndex];
+        audioPlayer.currentTime = prevSegment.time[0];
         onPlaySegment(
-          transcript[prevIndex].startTime,
-          transcript[prevIndex].endTime,
+          prevSegment.time[0],
+          prevSegment.time[1],
           prevIndex,
-          wasPlaying
+          true
         );
       }
     }

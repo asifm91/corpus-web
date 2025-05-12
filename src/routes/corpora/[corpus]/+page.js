@@ -119,74 +119,39 @@ export async function load({ params }) {
       });
     });
 
-    // jsonfile.default["contains"].forEach(
-    //   (
-    //     /** @type {{ label: string, first: { items: Array<{ body: { value: string }, target: Array<{ id: string }> }> } }} */ item
-    //   ) => {
-    //     if (
-    //       item.label.includes("_phrase-lit-en") ||
-    //       item.label.includes("_phrase-txt-clj_MM_X_ETIC")
-    //     ) {
-    //       // Loop through all items in the first.items array
-    //       item["first"]["items"].forEach((subItem) => {
-    //         const timeStr = subItem["target"][0]["id"]
-    //           .split("#")[1]
-    //           .replace("t=", "");
+    // Dummy metadata
+    const metadata = {
+      id: params.corpus,
+      title: "Laitu Story Collection",
+      language: "Laitu",
+      dialect: "Northern",
+      country: "Myanmar",
+      location: {
+        longitude: 97.5,
+        latitude: 21.5,
+      },
+      audioFormats: ["MP3", "WAV"],
+      genres: ["Folktale", "Narrative", "Oral History"],
+      speakers: [
+        {
+          age: 65,
+          gender: "Female",
+        },
+        {
+          age: 72,
+          gender: "Male",
+        },
+      ],
+    };
 
-    //         console.log(subItem);
-    //         const [start, end] = timeStr.split(",").map(Number);
-    //         const entry = {
-    //           eng_phase: item.label.includes("_phrase-lit-en")
-    //             ? subItem.body.value
-    //             : "",
-    //           phonetic_phase: item.label.includes("_phrase-txt-clj_MM_X_ETIC")
-    //             ? subItem.body.value
-    //             : "something",
-    //           time: [start, end],
-    //           individual_eng: [],
-    //           individual_phonetics: [],
-    //         };
-    //         transcript.push(entry);
-    //       });
-    //       // Collect individual words within this time range
-    //       jsonfile.default["contains"].forEach((wordItem) => {
-    //         if (
-    //           wordItem.label.includes("_morph-gls-en") ||
-    //           wordItem.label.includes("_morph-txt-clj-MM-fonipa-x-etic")
-    //         ) {
-    //           const wordTimeStr = wordItem["first"]["items"][0]["target"][0][
-    //             "id"
-    //           ]
-    //             .split("#")[1]
-    //             .replace("t=", "");
-    //           const [wordStart, wordEnd] = wordTimeStr.split(",").map(Number);
-
-    //           if (wordStart >= start && wordEnd <= end) {
-    //             const word = {
-    //               text: wordItem["first"]["items"][0]["body"]["value"],
-    //               time: [wordStart, wordEnd],
-    //             };
-
-    //             if (wordItem.label.includes("_morph-gls-en")) {
-    //               entry.individual_eng.push(word);
-    //             } else {
-    //               entry.individual_phonetics.push(word);
-    //             }
-    //           }
-    //         }
-    //       });
-    //     }
-    //   }
-    // );
     return {
       audio_mp3,
       audio_wav,
       transcript,
+      ...metadata,
     };
-  } catch (error) {
-    console.log("Error importing data files.");
-    console.log(error);
+  } catch (e) {
+    console.error(e);
+    throw error(404, "Not found");
   }
-
-  error(404, "Could not found the selected corpus.");
 }

@@ -5,12 +5,61 @@
   // Assuming the correct path for AudioPlayer.svelte is src/lib/AudioPlayer.svelte
   import AudioPlayer from "../../../lib/components/AudioPlayer.svelte";
   import TranscriptList from "../../../lib/components/TranscriptList.svelte";
+  import CorpusMetadata from "../../../lib/components/CorpusMetadata.svelte";
 
-  export let data;
+  interface PageData {
+    id: string;
+    title: string;
+    language: string;
+    dialect: string;
+    country: string;
+    location: {
+      longitude: number;
+      latitude: number;
+    };
+    audioFormats: string[];
+    genres: string[];
+    speakers: Array<{ age: number; gender: string }>;
+    audio_mp3: any;
+    audio_wav: any;
+    transcript: Array<{
+      speaker: string;
+      segNum: string;
+      eng_phase: string;
+      phonetic_phase: string;
+      time: [number, number];
+      individual_eng: Array<{ text: string; time: [number, number] }>;
+      individual_phonetics: Array<{ text: string; time: [number, number] }>;
+    }>;
+  }
+
+  export let data: PageData;
   const transcript = data?.transcript;
-  console.log(data)
+  console.log(data);
   const audio_mp3 = data?.audio_mp3;
   const audio_wav = data?.audio_wav;
+
+  // Add metadata
+  const metadata = {
+    id: data?.id || "",
+    title: data?.title || "",
+    language: data?.language || "",
+    dialect: data?.dialect || "",
+    country: data?.country || "",
+    location: {
+      longitude: data?.location?.longitude || 0,
+      latitude: data?.location?.latitude || 0,
+    },
+    audioLength: 0, // Will be updated when audio is loaded
+    audioFormats: ["MP3", "WAV"],
+    genres: data?.genres || [],
+    speakers: data?.speakers || [],
+  };
+
+  // Update audio length when loaded
+  $: if (duration) {
+    metadata.audioLength = duration;
+  }
 
   let isLoading = true;
   let audioError = false;
@@ -48,7 +97,7 @@
       if (isPlaying && activeCardIndex !== -1) {
         const currentSegment = transcript[activeCardIndex];
         const existsInFiltered = filteredData.some(
-          (item: any) => item.startTime === currentSegment.startTime
+          (item: any) => item.time[0] === currentSegment.time[0]
         );
         if (!existsInFiltered) {
           // Pause audio if current segment is not in filtered results
@@ -163,14 +212,19 @@
   function updateActiveCard(currentTime: number) {
     const previousIndex = activeCardIndex;
     const currentSegment = transcript.find(
-      (item: any) =>
-        currentTime >= item.startTime && currentTime <= item.endTime
+      (item: any) => currentTime >= item.time[0] && currentTime <= item.time[1]
     );
 
     if (currentSegment) {
       activeCardIndex = transcript.findIndex(
-        (item: any) => item.startTime === currentSegment.startTime
+        (item: any) => item.time[0] === currentSegment.time[0]
       );
+
+      // Stop playback if we've reached the end of the current segment
+      if (currentTime >= currentSegment.time[1]) {
+        audioPlayer.pause();
+        isPlaying = false;
+      }
     } else {
       activeCardIndex = -1;
     }
@@ -208,7 +262,7 @@
       if (searchQuery) {
         const existsInFiltered = filteredData.some(
           (item: any) =>
-            transcript.findIndex((l: any) => l.startTime === item.startTime) ===
+            transcript.findIndex((l: any) => l.time[0] === item.time[0]) ===
             index
         );
 
@@ -230,15 +284,9 @@
       // Update the current time
       audioPlayer.currentTime = startTime;
 
-      // Only play if we're explicitly told to play or if we're clicking directly on a segment
-      if (
-        shouldPlay === true ||
-        (shouldPlay === undefined && activeCardIndex === index)
-      ) {
-        audioPlayer.play();
-        isPlaying = true;
-      }
-
+      // Play the audio
+      audioPlayer.play();
+      isPlaying = true;
       activeCardIndex = index;
 
       if (autoScrollEnabled) {
@@ -263,27 +311,37 @@
 </script>
 
 <div class="container mx-auto px-4 py-8">
-  <AudioPlayer
-    {transcript}
-    {audio_mp3}
-    {audio_wav}
-    bind:audioPlayer
-    bind:isPlaying
-    bind:activeCardIndex
-    bind:autoScrollEnabled
-    onPlaySegment={handlePlaySegment}
-    onAutoScrollToggle={handleAutoScrollToggle}
-    onTimeUpdate={updateActiveCard}
-  />
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Left column: Audio player and cards -->
+    <div class="lg:col-span-2 space-y-6">
+      <AudioPlayer
+        {transcript}
+        {audio_mp3}
+        {audio_wav}
+        bind:audioPlayer
+        bind:isPlaying
+        bind:activeCardIndex
+        bind:autoScrollEnabled
+        onPlaySegment={handlePlaySegment}
+        onAutoScrollToggle={handleAutoScrollToggle}
+        onTimeUpdate={updateActiveCard}
+      />
 
-  <TranscriptList
-    {transcript}
-    {activeCardIndex}
-    {isPlaying}
-    onPlaySegment={handlePlaySegment}
-    {formatTime}
-    onScroll={handleScroll}
-  />
+      <TranscriptList
+        {transcript}
+        {activeCardIndex}
+        {isPlaying}
+        onPlaySegment={handlePlaySegment}
+        {formatTime}
+        onScroll={handleScroll}
+      />
+    </div>
+
+    <!-- Right column: Metadata -->
+    <div class="lg:col-span-1">
+      <CorpusMetadata {metadata} />
+    </div>
+  </div>
 </div>
 
 <style>

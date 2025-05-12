@@ -42,77 +42,6 @@
   </style>
 </svelte:head>
 
-<!-- Navbar -->
-<nav
-  class="navbar fixed top-0 left-0 right-0 z-50 bg-base-100 shadow-lg px-4 md:px-8"
->
-  <div class="navbar-start">
-    <div class="dropdown">
-      <div tabindex="0" role="button" class="btn btn-ghost lg:hidden">
-        <svg
-          class="h-5 w-5"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          ><path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M4 6h16M4 12h8m-8 6h16"
-          /></svg
-        >
-      </div>
-      <ul
-        tabindex="0"
-        class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52"
-      >
-        <li><a href="#home">Home</a></li>
-        <li><a href="/Corpora/laitu">Corpora</a></li>
-        <li>
-          <a href="#endangered"
-            >Endangered Languages of South and Southeast Asia</a
-          >
-        </li>
-        <li><a href="#about">About</a></li>
-        <li><a href="/register/">Register</a></li>
-      </ul>
-    </div>
-    <a href="/" class="font-display text-xl text-primary" data-aos="fade-right"
-      >abʰā</a
-    >
-  </div>
-  <div class="navbar-center hidden lg:flex">
-    <ul class="menu menu-horizontal px-1">
-      <li>
-        <a href="#home" data-aos="fade-down" data-aos-delay="100">Home</a>
-      </li>
-      <li>
-        <a href="/corpora/laitu" data-aos="fade-down" data-aos-delay="200"
-          >Corpora</a
-        >
-      </li>
-      <li>
-        <a href="#endangered" data-aos="fade-down" data-aos-delay="300"
-          >Endangered Languages of South and Southeast Asia</a
-        >
-      </li>
-      <li>
-        <a href="#about" data-aos="fade-down" data-aos-delay="400">About</a>
-      </li>
-    </ul>
-  </div>
-  <div class="navbar-end">
-
-    <Button
-      variant="primary"
-      onClick={() => (window.location.href = "/register")}
-      dataAos="fade-left"
-    >
-      Register
-    </Button>
-  </div>
-</nav>
-
 <!-- Hero Section -->
 <div id="home" class="hero min-h-[80vh] bg-neutral">
   <div class="hero-content text-center">
@@ -279,30 +208,6 @@
     </div>
   </div>
 </section>
-
-<!-- Footer -->
-<footer id="about" class="footer p-10 bg-primary text-base-100">
-  <nav>
-    <h6 class="footer-title">Services</h6>
-    <a class="link link-hover">Language Documentation</a>
-    <a class="link link-hover">Cultural Preservation</a>
-    <a class="link link-hover">Research Tools</a>
-    <a class="link link-hover">Documentation</a>
-  </nav>
-  <nav>
-    <h6 class="footer-title">Organization</h6>
-    <a class="link link-hover">About us</a>
-    <a class="link link-hover">Contact</a>
-    <a class="link link-hover">Research</a>
-    <a class="link link-hover">Press kit</a>
-  </nav>
-  <nav>
-    <h6 class="footer-title">Legal</h6>
-    <a class="link link-hover">Terms of use</a>
-    <a class="link link-hover">Privacy policy</a>
-    <a class="link link-hover">Cookie policy</a>
-  </nav>
-</footer>
 
 <style>
   :global(html) {
