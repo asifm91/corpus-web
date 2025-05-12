@@ -3,8 +3,6 @@
   import AOS from "aos";
   import "aos/dist/aos.css";
   import Button from "$lib/components/Button.svelte";
-  import Navbar from "$lib/components/Navbar.svelte";
-  import Footer from "$lib/components/Footer.svelte";
 
   onMount(() => {
     // Initialize AOS
@@ -43,8 +41,6 @@
     }
   </style>
 </svelte:head>
-
-<Navbar />
 
 <!-- Hero Section -->
 <div id="home" class="hero min-h-[80vh] bg-neutral">
@@ -212,8 +208,6 @@
     </div>
   </div>
 </section>
-
-<Footer />
 
 <style>
   :global(html) {

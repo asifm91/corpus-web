@@ -6,8 +6,6 @@
   import AudioPlayer from "../../../lib/components/AudioPlayer.svelte";
   import TranscriptList from "../../../lib/components/TranscriptList.svelte";
   import CorpusMetadata from "../../../lib/components/CorpusMetadata.svelte";
-  import Navbar from "../../../lib/components/Navbar.svelte";
-  import Footer from "../../../lib/components/Footer.svelte";
 
   interface PageData {
     id: string;
@@ -313,7 +311,6 @@
 </script>
 
 <div class="container mx-auto px-4 py-8">
-  <Navbar />
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <!-- Left column: Audio player and cards -->
     <div class="lg:col-span-2 space-y-6">
@@ -346,8 +343,6 @@
     </div>
   </div>
 </div>
-
-<Footer />
 
 <style>
   /* Add any additional custom styles here */
