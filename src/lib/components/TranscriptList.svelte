@@ -3,6 +3,7 @@
   import Fuse from "fuse.js";
   import type { FuseResult } from "fuse.js";
   import TranscriptCard from "./TranscriptCard.svelte";
+  import { onMount, onDestroy } from "svelte";
 
   interface TranscriptSegment {
     speaker: string;
@@ -33,6 +34,8 @@
   let searchResults: FuseResult<TranscriptSegment>[] = [];
   let showWarning = false;
   let warningMessage = "";
+  let showScrollTop = false;
+  let transcriptListDiv: HTMLDivElement | null = null;
 
   // Configure Fuse.js with improved options for partial matching
   const fuseOptions = {
@@ -45,7 +48,7 @@
     shouldSort: true,
     threshold: 0.3,
     ignoreLocation: true,
-    minMatchCharLength: 1,
+    minMatchCharLength: 3, // updated from 1 to 3
     findAllMatches: true,
     includeMatches: true,
     useExtendedSearch: true,
@@ -54,7 +57,7 @@
 
   // Search functionality with full result objects
   $: {
-    if (searchQuery) {
+    if (searchQuery && searchQuery.length >= 3) {
       searchResults = fuse.search(searchQuery);
     } else {
       searchResults = [];
@@ -95,6 +98,31 @@
     }
     onPlaySegment(startTime, endTime, index);
   }
+
+  function handleScroll(e: Event) {
+    const target = e.target as HTMLElement;
+    // showScrollTop = target.scrollTop > 50; // This line is removed
+    onScroll();
+  }
+
+  function scrollToTop() {
+    // Try scrolling both documentElement and body for cross-browser compatibility
+    document.documentElement.scrollTo({ top: 0, behavior: "smooth" });
+    document.body.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function handleWindowScroll() {
+    showScrollTop = window.scrollY > 50;
+  }
+
+  onMount(() => {
+    window.addEventListener("scroll", handleWindowScroll);
+    handleWindowScroll();
+  });
+
+  onDestroy(() => {
+    window.removeEventListener("scroll", handleWindowScroll);
+  });
 </script>
 
 <!-- Search input with better styling -->
@@ -129,9 +157,13 @@
     {/if}
   </div>
 
-  {#if searchQuery}
+  {#if searchQuery && searchQuery.length >= 3}
     <div class="text-sm text-base-content/70 mt-2">
       Found {searchResults.length} matching segments
+    </div>
+  {:else if searchQuery && searchQuery.length < 3}
+    <div class="text-sm text-base-content/70 mt-2">
+      Please enter at least 3 characters to search.
     </div>
   {/if}
 </div>
@@ -139,9 +171,9 @@
 <!-- Transcript Cards -->
 <div
   class="flex flex-col gap-4 p-3 overflow-auto scroll-smooth"
-  on:scroll={onScroll}
+  on:scroll={handleScroll}
   data-aos="fade-up"
-  style="max-height: calc(100vh - 300px);"
+  bind:this={transcriptListDiv}
 >
   {#each transcript as segment, index}
     {@const searchResult = isInSearchResults(segment)}
@@ -164,6 +196,31 @@
     {/if}
   {/each}
 </div>
+
+<!-- Move the floating button OUTSIDE the scrollable div -->
+{#if showScrollTop}
+  <button
+    class="fixed bottom-8 right-8 z-50 btn btn-primary btn-circle shadow-lg animate-fade-in"
+    on:click={scrollToTop}
+    aria-label="Scroll to top"
+    style="transition: opacity 0.3s;"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      class="h-6 w-6"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M5 15l7-7 7 7"
+      />
+    </svg>
+  </button>
+{/if}
 
 <!-- Warning message with improved styling -->
 {#if showWarning}
@@ -200,5 +257,17 @@
 
   div::-webkit-scrollbar-thumb {
     @apply bg-primary/30 rounded-full hover:bg-primary/50 transition-colors;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.3s;
+  }
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
   }
 </style>

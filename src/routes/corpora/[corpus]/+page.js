@@ -1,19 +1,88 @@
+// @ts-nocheck
 import { error } from "@sveltejs/kit";
 
-// @ts-ignore
+/**
+ * @typedef {Object} TranscriptEntry
+ * @property {string} speaker
+ * @property {string} segNum
+ * @property {string} eng_phase
+ * @property {string} phonetic_phase
+ * @property {[number, number]} time
+ * @property {Array<{text: string, time: [number, number]}>} individual_eng
+ * @property {Array<{text: string, time: [number, number]}>} individual_phonetics
+ */
+
 export async function load({ params }) {
   let audio_mp3 = undefined;
   let audio_wav = undefined;
-  /** @type {Array<{ eng_phase: string, phonetic_phase: string, time: [number, number], individual_eng: Array<{ text: string, time: [number, number] }>, individual_phonetics: Array<{ text: string, time: [number, number] }> }>} */
+  /** @type {TranscriptEntry[]} */
   let transcript = [];
 
+
+
+  // try {
+  //   audio_mp3 = await import(`../../../data/${params.corpus}.mp3`);
+  //   audio_wav = await import(`../../../data/${params.corpus}.wav`);
+  //   const jsonfile = await import(`../../../data/${params.corpus}.json`);
+
+
   try {
-    audio_mp3 = await import(`../../../data/${params.corpus}.mp3`);
-    audio_wav = await import(`../../../data/${params.corpus}.wav`);
-    const jsonfile = await import(`../../../data/${params.corpus}.json`);
+    // Fetch data from Strapi API
+    const apiResponse = await fetch('https://brilliant-laughter-fc0302f635.strapiapp.com/api/json-entries?populate=*');
+    
+    if (!apiResponse.ok) {
+      throw new Error(`API request failed: ${apiResponse.status}`);
+    }
+    
+    const apiData = await apiResponse.json();
+    
+    // Find the corpus that matches the language parameter
+    const corpusData = apiData.data.find(item => item.language === params.corpus);
+    
+    if (!corpusData) {
+      throw new Error(`Corpus '${params.corpus}' not found in API data`);
+    }
+    
+    // Get the JSON file URL from the API response
+    const jsonFileUrl = corpusData.json[0]?.url;
+    
+    if (!jsonFileUrl) {
+      throw new Error(`No JSON file URL found for corpus '${params.corpus}'`);
+    }
+    
+    // Fetch the actual JSON data from the URL
+    const jsonResponse = await fetch(jsonFileUrl);
+    
+    if (!jsonResponse.ok) {
+      throw new Error(`Failed to fetch JSON data: ${jsonResponse.status}`);
+    }
+    
+    const jsonfile = await jsonResponse.json();
+    
+    // Handle audio files - check if API provides audio URLs, otherwise fall back to static files
+    if (corpusData.audio && corpusData.audio.length > 0) {
+      // Use audio URLs from API if available
+      const mp3File = corpusData.audio.find(file => file.ext === '.mp3');
+      const wavFile = corpusData.audio.find(file => file.ext === '.wav');
+      
+      if (mp3File) {
+        audio_mp3 = { default: mp3File.url };
+      }
+      if (wavFile) {
+        audio_wav = { default: wavFile.url };
+      }
+    } else {
+      // Fall back to static audio files if API doesn't provide audio URLs
+      try {
+        audio_mp3 = await import(`../../../data/${params.corpus}.mp3`);
+        audio_wav = await import(`../../../data/${params.corpus}.wav`);
+      } catch (audioError) {
+        console.warn(`Audio files not found for ${params.corpus}, continuing without audio`);
+      }
+    }
 
     // Process the transcript data
-    const en_phases = jsonfile.default["contains"].filter((item) =>
+    const en_phases = jsonfile["contains"].filter(item =>
       item.label.includes("_phrase-segnum-en")
     );
 
@@ -37,7 +106,7 @@ export async function load({ params }) {
       });
     });
 
-    const eng_phases = jsonfile.default["contains"].filter((item) =>
+    const eng_phases = jsonfile["contains"].filter(item =>
       item.label.includes("_phrase-lit-en")
     );
 
@@ -55,7 +124,7 @@ export async function load({ params }) {
         });
       });
     });
-    const phonetic_phases = jsonfile.default["contains"].filter((item) =>
+    const phonetic_phases = jsonfile["contains"].filter(item =>
       item.label.includes("_phrase-txt-clj_MM_X_ETIC")
     );
 
@@ -76,7 +145,7 @@ export async function load({ params }) {
       });
     });
 
-    const individual_engs = jsonfile.default["contains"].filter((item) =>
+    const individual_engs = jsonfile["contains"].filter(item =>
       item.label.includes("_morph-gls-en")
     );
 
@@ -97,7 +166,7 @@ export async function load({ params }) {
         });
       });
     });
-    const individual_phonetics = jsonfile.default["contains"].filter((item) =>
+    const individual_phonetics = jsonfile["contains"].filter(item =>
       item.label.includes("_morph-txt-clj-MM-fonipa-x-etic")
     );
 

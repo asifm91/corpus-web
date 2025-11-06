@@ -43,7 +43,7 @@
   }
 </script>
 
-<div class="bg-base-100 rounded-lg shadow-lg p-6 h-[90vh] overflow-auto scroll-smooth">
+<div class="m-3 bg-base-100 rounded-lg shadow-lg p-6">
   <h2 class="text-xl font-bold mb-4">Corpus Metadata</h2>
 
   <div class="space-y-4">
